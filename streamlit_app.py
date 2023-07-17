@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+import streamlit.components.v1 as components
 
 def main():
     st.set_page_config(layout="wide")  # Set the layout to wide
@@ -25,6 +26,12 @@ def main():
         ---
         Created by [Tsitsi Dalakishvili](https://www.linkedin.com/in/tsitsi-dalakishvili/).
         """
+    )
+
+    # Add custom CSS styles
+    components.html(
+        f'<link rel="stylesheet" type="text/css" href="{YOUR_GITHUB_REPO_URL}/chart_style.css">',
+        height=0
     )
 
 def get_assignee_rates(df):
