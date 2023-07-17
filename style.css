@@ -1,0 +1,15 @@
+/* Custom chart background color */
+.plotly-graph-div .plotly .modebar-container .modebar .modebar-group .modebar-btn {
+    background-color: green !important;
+}
+
+/* Custom chart title color */
+.plotly .modebar-container .modebar .plotly-graph-div .hoverlayer .titletext {
+    color: red !important;
+}
+
+/* Custom chart axis color */
+.plotly .modebar-container .modebar .plotly-graph-div .hoverlayer .xtick,
+.plotly .modebar-container .modebar .plotly-graph-div .hoverlayer .ytick {
+    stroke: blue !important;
+}
