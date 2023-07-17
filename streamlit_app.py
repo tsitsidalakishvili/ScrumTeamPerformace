@@ -30,7 +30,7 @@ def main():
 
     # Add custom CSS styles
     components.html(
-        f'<link rel="stylesheet" type="text/css" href="https://raw.githubusercontent.com/tsitsidalakishvili/ScrumTeamPerformace/main/style.css">',
+        f'<link rel="stylesheet" type="text/css" href="https://github.com/tsitsidalakishvili/ScrumTeamPerformace/blob/main/style.css">',
         height=0
     )
 
