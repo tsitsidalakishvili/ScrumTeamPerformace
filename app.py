@@ -913,7 +913,7 @@ def run_app():
         "Team Performance": display_tab2,
         "Individual Performance": display_tab4,
         "Productivity & Workload": display_tab3,
-        "Sprint": display_tab5,
+        "Current Sprint": display_tab5,
         "Ad Hoc Analysis": display_Ad_Hoc_Analysis
     }
     
