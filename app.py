@@ -278,9 +278,7 @@ def create_cfd_chart(avg_ratio_by_project):
         title='Team Average Ratio by CoreTimeProject',
         xaxis=dict(title='CoreTimeProject'),
         yaxis=dict(title='Average Ratio'),
-        font=dict(color='black'),
-        plot_bgcolor='white',
-        paper_bgcolor='white'
+        font=dict(color='black')
     )
 
     # Apply styling to the markers
