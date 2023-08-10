@@ -6,6 +6,55 @@ import matplotlib.pyplot as plt
 from wordcloud import WordCloud
 from io import BytesIO
 import re
+from streamlit_elements import elements, mui, html
+from streamlit_elements import dashboard, mui
+import datetime
+
+
+
+from streamlit_elements import dashboard, mui, elements
+
+def display_dashboard(df, assignee_rates):
+
+
+    with elements("dashboard"):
+
+        from streamlit_elements import dashboard
+
+        # First, build a default layout for every element you want to include in your dashboard
+
+        layout = [
+            # Parameters: element_identifier, x_pos, y_pos, width, height, [item properties...]
+            dashboard.Item("first_item", 0, 0, 2, 2),
+            dashboard.Item("second_item", 2, 0, 2, 2, isDraggable=False, moved=False),
+            dashboard.Item("third_item", 0, 2, 1, 1, isResizable=False),
+        ]
+
+        # Next, create a dashboard layout using the 'with' syntax. It takes the layout
+        # as first parameter, plus additional properties you can find in the GitHub links below.
+
+        with dashboard.Grid(layout):
+            mui.Paper("First item", key="first_item")
+            mui.Paper("Second item (cannot drag)", key="second_item")
+            mui.Paper("Third item (cannot resize)", key="third_item")
+
+        # If you want to retrieve updated layout values as the user move or resize dashboard items,
+        # you can pass a callback to the onLayoutChange event parameter.
+
+        def handle_layout_change(updated_layout):
+            # You can save the layout in a file, or do anything you want with it.
+            # You can pass it back to dashboard.Grid() if you want to restore a saved layout.
+            print(updated_layout)
+
+        with dashboard.Grid(layout, onLayoutChange=handle_layout_change):
+            mui.Paper("First item", key="first_item")
+            mui.Paper("Second item (cannot drag)", key="second_item")
+            mui.Paper("Third item (cannot resize)", key="third_item")
+
+
+
+            
+
 
 
 
@@ -17,7 +66,7 @@ def load_data(uploaded_file_iterative, uploaded_file_eigen):
             Eigen = pd.read_csv(uploaded_file_eigen, encoding='iso-8859-1')
 
             Iterative = Iterative[['Issue summary', 'Hours', 'Full name', 'Work date', 'CoreTime', 'Issue Type', 'Issue Status']]
-            Eigen = Eigen[['Summary', 'Issue key', 'Status', 'Epic Link Summary', 'Labels', 'Priority', 'Issue Type', 'Assignee', 'Creator', 'Sprint', 'Created', 'Resolution', 'Custom field (Story Points)',
+            Eigen = Eigen[['Summary', 'Issue key', 'Status', 'Resolved', 'Epic Link Summary', 'Labels', 'Priority', 'Issue Type', 'Assignee', 'Creator', 'Sprint', 'Created', 'Resolution', 'Custom field (Story Points)',
                            'Custom field (CoreTimeActivity)', 'Custom field (CoreTimeClient)', 'Custom field (CoreTimePhase)', 'Custom field (CoreTimeProject)', 'Project name']]
 
             Eigen = Eigen.rename(columns={'Custom field (CoreTimeActivity)': 'CoreTimeActivity', 'Custom field (CoreTimeClient)': 'CoreTimeClient',
@@ -35,8 +84,8 @@ def load_data(uploaded_file_iterative, uploaded_file_eigen):
             merged_df = merged_df.rename(columns={'Assignee_x': 'Assignee', 'Issue Type_x': 'Issue Type'})
             merged_df = merged_df.drop('Issue Type_y', axis=1)
             merged_df = merged_df[['Issue key', 'Work date', 'Assignee', 'Sprint', 'Status', 'Priority', 'Project name', 'Issue Type', 'Creator', 'Created', 'Resolution',
-                                   'Story Points', 'Hours', 'Epic', 'CoreTimeActivity', 'CoreTimeClient', 'CoreTimePhase', 'CoreTimeProject', 'Labels']]
-            grouped_df = merged_df.groupby('Issue key').agg({'Hours': 'sum', 'Story Points': 'first', 'Assignee': 'first', 'Sprint': 'first', 'Resolution': 'first', 'Priority': 'first',
+                                   'Story Points', 'Hours', 'Resolved','Epic', 'CoreTimeActivity', 'CoreTimeClient', 'CoreTimePhase', 'CoreTimeProject', 'Labels']]
+            grouped_df = merged_df.groupby('Issue key').agg({'Hours': 'sum', 'Story Points': 'first', 'Assignee': 'first', 'Sprint': 'first', 'Resolution': 'first', 'Resolved': 'first', 'Created': 'first', 'Priority': 'first',
                                                              'Creator': 'first', 'CoreTimeActivity': 'first', 'CoreTimeClient': 'first', 'CoreTimePhase': 'first', 'Epic': 'first',
                                                              'CoreTimeProject': 'first', 'Project name': 'first', 'Status': 'first', 'Labels': 'first', 'Work date': 'first', 'Issue Type' : 'first'}).reset_index()
             df = grouped_df
@@ -57,6 +106,7 @@ def load_data(uploaded_file_iterative, uploaded_file_eigen):
 
 #-------------------------------------------------------------------------------------------------------------------------------------#
 
+
 def get_assignee_rates(df):
     assignee_rates = {}
     for assignee in df['Assignee'].unique():
@@ -65,12 +115,12 @@ def get_assignee_rates(df):
         assignee_rates[assignee] = rate
     return assignee_rates
 
-
-#-------------------------------------------------------------------------------------------------------------------------------------#
-
 def display_assignee_rates(assignee_rates):
     for assignee, rate in assignee_rates.items():
         st.sidebar.write(f"Rate for Assignee {assignee}: {rate}")
+
+
+
 
 #--------------------------------------------------------------------------------------------------------------#
 
@@ -453,18 +503,39 @@ def display_tab2(df, assignee_rates):
     st.dataframe(filtered_df)
 
 #-------------------------------------------------------------------------------------------------------------------------------------#
+
+
+
 def display_tab3(df, assignee_rates):
-    # Table for the top assignees by ticket count
-    top_assignees_table = df['Assignee'].value_counts().reset_index()
+    
+    def custom_container(content, title=None):
+        """Generates an HTML representation of a container mimicking mui.Paper."""
+        style = """
+            border: 1px solid #e0e0e0;
+            padding: 16px;
+            border-radius: 4px;
+            resize: both;
+            overflow: auto;
+            margin: 8px 0;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        """
+        header = f"<h4>{title}</h4>" if title else ""
+        return f"""
+            <div style="{style}">
+                {header}
+                {content}
+            </div>
+        """
+
+    # Calculate the top assignees by ticket count
+    top_assignees_table = df['Assignee'].value_counts().head(10).reset_index()
     top_assignees_table.columns = ['Assignee', 'Ticket Count']
-    top_assignees_table = top_assignees_table.head(10)
 
-    # Table for the top clients by ticket count
-    top_clients_table = df['CoreTimeClient'].value_counts().reset_index()
+    # Calculate the top clients by ticket count
+    top_clients_table = df['CoreTimeClient'].value_counts().head(10).reset_index()
     top_clients_table.columns = ['CoreTimeClient', 'Ticket Count']
-    top_clients_table = top_clients_table.head(10)
 
-    # Create the charts
+    # Create a scatter plot: Spent days vs. Delivered Story Points by Project
     project_data = df.groupby('CoreTimeProject').agg({'Hours': 'sum', 'days': 'sum', 'Story Points': 'sum'}).reset_index()
     Spent_days_Delivered_SPs = px.scatter(
         project_data,
@@ -476,8 +547,8 @@ def display_tab3(df, assignee_rates):
         title='Spent days vs. Delivered Story Points by Project'
     )
 
+    # Create a scatter plot: Story Points by Project, Assignee, and Sprint
     df_grouped = df.groupby(['Project name', 'Assignee', 'Sprint'])['Story Points'].sum().reset_index()
-    sprint_options = [{'label': sprint, 'value': sprint} for sprint in df_grouped['Sprint'].unique()]
     Projects_Assignees_Sprints = px.scatter(
         df_grouped,
         x='Project name',
@@ -489,31 +560,30 @@ def display_tab3(df, assignee_rates):
         title='Story Points by Project, Assignee, and Sprint'
     )
 
-    # Display the charts
-    col1, col2 = st.columns([2, 2])
+    # Define the layout for the dashboard items
+    layout = [
+        {"i": "assignee_table_paper", "x": 0, "y": 0, "w": 2, "h": 2},
+        {"i": "client_table_paper", "x": 2, "y": 0, "w": 2, "h": 2},
+        {"i": "spent_vs_delivered_paper", "x": 0, "y": 2, "w": 2, "h": 2},
+        {"i": "points_by_project_paper", "x": 2, "y": 2, "w": 2, "h": 2}
+    ]
 
-    with col1:
-        st.subheader('Top Assignees by Ticket Count')
-        st.table(top_assignees_table)
+    # Render the dashboard
+    with elements("display_tab3"):
+            with dashboard.Grid(layout=layout, cols={'lg': 4}, breakpoints={'lg': 1200}):
+                with mui.Paper("Top Assignees by Ticket Count", key="assignee_table_paper"):
+                    st.table(top_assignees_table)
+                with mui.Paper("Top Clients by Ticket Count", key="client_table_paper"):
+                    st.table(top_clients_table)
+                with mui.Paper("Spent days vs. Delivered Story Points by Project", key="spent_vs_delivered_paper"):
+                    st.plotly_chart(Spent_days_Delivered_SPs, use_container_width=True)
+                with mui.Paper("Story Points by Project, Assignee, and Sprint", key="points_by_project_paper"):
+                    st.plotly_chart(Projects_Assignees_Sprints, use_container_width=True)
 
-        st.plotly_chart(Spent_days_Delivered_SPs, use_container_width=True)
 
-    with col2:
-        st.subheader('Top Clients by Ticket Count')
-        st.table(top_clients_table)
-
-        st.plotly_chart(Projects_Assignees_Sprints, use_container_width=True)
-
+           
 #--------------------------------------------------------------------------------------------#
-def display_sprint_blockers(df):
-    # Filter rows where Status is Blocked
-    filtered_df = df[df['Status'] == 'Blocked']
 
-
-    # Reset the index and drop the original index
-    filtered_df = filtered_df.reset_index(drop=True)
-
-    return filtered_df
 
 #-------------------------------------------------------------------------------------------------------------------------------------#
 def calculate_assignee_capacity(df, avg_ratio, sprint_duration_weeks=3, working_days_per_week=5):
@@ -659,8 +729,11 @@ def display_tab4(df, assignee_rates):
     # Display the filtered DataFrame as a table
     st.dataframe(filtered_df)
 
+#----------------------------------------------------------------------------------------#
 
 #----------------------------------------------------------------------------------------#
+
+
 def display_tab5(df, assignee_rates):
     # Remove whitespace from column names (if any)
     df.columns = df.columns.str.strip()
@@ -770,6 +843,12 @@ def display_tab5(df, assignee_rates):
     with col2:
         st.plotly_chart(added_to_sprint_fig, use_container_width=True)
         st.plotly_chart(status_assignee_fig, use_container_width=True)
+
+        
+
+
+
+
 
 
 
@@ -946,6 +1025,8 @@ def run_app():
     uploaded_file_iterative = st.sidebar.file_uploader("Choose Iterative CSV file", type="csv")
     uploaded_file_eigen = st.sidebar.file_uploader("Choose Eigen CSV file", type="csv")
 
+
+
     # If both files are uploaded, process them
     df = None
     if uploaded_file_iterative and uploaded_file_eigen:
@@ -961,6 +1042,7 @@ def run_app():
         st.title(f"Dev Sprint 80 - {last_sprint_number}")
 
         tabs = {
+            "Dashboard": display_dashboard,
             "Costs": display_tab1,
             "Team Performance": display_tab2,
             "Individual Performance": display_tab4,
