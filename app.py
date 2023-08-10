@@ -909,11 +909,11 @@ def run_app():
 
     # Tabs at the top of the sidebar
     tabs = {
-        "Costs": display_tab1,
+        "Current Sprint": display_tab5,
         "Team Performance": display_tab2,
         "Individual Performance": display_tab4,
+        "Costs": display_tab1,
         "Productivity & Workload": display_tab3,
-        "Current Sprint": display_tab5,
         "Ad Hoc Analysis": display_Ad_Hoc_Analysis
     }
     
