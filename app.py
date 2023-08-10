@@ -797,7 +797,7 @@ def display_tab5(df, assignee_rates):
 
     with col1:
         st.plotly_chart(assignee_capacity_fig, use_container_width=True)
-        #st.plotly_chart(resolution_time_fig, use_container_width=True)
+        st.plotly_chart(resolution_time_fig, use_container_width=True)
 
     with col2:
         st.plotly_chart(added_to_sprint_fig, use_container_width=True)
