@@ -944,7 +944,7 @@ def run_app():
         selected_function = tabs[selected_tab]
         selected_function(df, assignee_rates)  # Pass assignee_rates as a parameter
     else:
-        st.warning("Could not process the data.")
+        st.warning("Upload files.")
 
 if __name__ == "__main__":
     run_app()
