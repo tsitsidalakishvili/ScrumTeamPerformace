@@ -879,23 +879,23 @@ def display_Ad_Hoc_Analysis(df, assignee_rates):
         title='Time Booked by Sprint and Assignee'
     )
 
-    # Add new chart: Line chart of Delivered Story Points vs Booked Hours by Sprint for Aleksander Kulbat
-    aleksander_data = df[df['Assignee'] == 'Aleksander Kulbat']
+    # Add new chart: Line chart of Delivered Story Points vs Booked Hours by Sprint for Aleksander 
+    aleksander_data = df[df['Assignee'] == 'Aleksander ']
     line_chart_delivered_vs_hours = px.line(
         aleksander_data.groupby('Sprint')[['Story Points', 'Hours']].sum().reset_index(),
         x='Sprint',
         y=['Story Points', 'Hours'],
         labels={'Sprint': 'Sprint', 'value': 'Value', 'variable': 'Metric'},
-        title='Delivered Story Points vs Booked Hours by Sprint (Aleksander Kulbat)'
+        title='Delivered Story Points vs Booked Hours by Sprint (Aleksander )'
     )
 
-    # Add new chart: Line chart of Delivered Story Points and Average Ratio by Sprint for Aleksander Kulbat
+    # Add new chart: Line chart of Delivered Story Points and Average Ratio by Sprint for Aleksander 
     line_chart_delivered_and_ratio = px.line(
         aleksander_data.groupby('Sprint').agg({'Story Points': 'sum', 'Avg_Ratio': 'mean'}).reset_index(),
         x='Sprint',
         y=['Story Points', 'Avg_Ratio'],
         labels={'Sprint': 'Sprint', 'value': 'Value', 'variable': 'Metric'},
-        title='Delivered Story Points and Average Ratio by Sprint (Aleksander Kulbat)'
+        title='Delivered Story Points and Average Ratio by Sprint (Aleksander )'
     )
 
     #st.plotly_chart(line_chart_delivered_sp, line_chart_avg_ratio, line_chart_time_booked, line_chart_delivered_vs_hours, line_chart_delivered_and_ratio, treemap_fig)
