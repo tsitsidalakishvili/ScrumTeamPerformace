@@ -17,3 +17,4 @@ networkx==3.1
 pyecharts==1.9.0
 wordcloud==1.9.2
 matplotlib==3.4.3
+streamlit-elements==0.1.
