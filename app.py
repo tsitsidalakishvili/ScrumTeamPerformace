@@ -242,7 +242,16 @@ def display_tab1(df, assignee_rates):
         
         col3.plotly_chart(treemap_fig, use_container_width=True)
         col3.plotly_chart(line_chart_story_points, use_container_width=True)
+    search_value = st.text_input("Search for value in table rows:", "", key="search_input_tab2")
 
+    # Filter the DataFrame based on the search input
+    if search_value:
+        filtered_df = df[df.apply(lambda row: search_value.lower() in str(row).lower(), axis=1)]
+    else:
+        filtered_df = df  # If no search input, show the original DataFrame
+
+    # Display the filtered DataFrame as a table
+    st.dataframe(filtered_df)
 #-----------------------------------------------------------------------------------------------------------------------#
 
 def calculate_average_ratio_by_project(df):
