@@ -6,7 +6,8 @@ import matplotlib.pyplot as plt
 from wordcloud import WordCloud
 from io import BytesIO
 import re
-
+from streamlit_elements import elements, mui, html
+from streamlit_elements import dashboard, mui
 import datetime
 
 
@@ -646,6 +647,8 @@ def display_tab4(df, assignee_rates):
         labels={'Issue Type': 'Issue Type', 'Avg_Ratio': 'Average Ratio', 'Assignee': 'Assignee'}
     )
 
+    avg_ratio_chart.update_traces(texttemplate='%{value:.2f}', textposition='inside')
+
 
     # Add new chart: Line chart of Average Ratio by Sprint and Assignee
     line_chart_avg_ratio = px.line(
@@ -728,6 +731,9 @@ def display_tab5(df, assignee_rates):
         color_discrete_map={'Assignee Capacity': 'green', 'Assignee Workload': 'red'}
     )
     assignee_capacity_fig.update_xaxes(range=[0, 100])
+    assignee_capacity_fig.update_traces(texttemplate='%{value:.1f}', textposition='inside')
+
+
 
 
     # Convert datetime columns
@@ -756,6 +762,8 @@ def display_tab5(df, assignee_rates):
         labels={'Category': 'Category', 'Story Points': 'Story Points'},
         orientation='v'
     )
+    added_to_sprint_fig.update_traces(texttemplate='%{value}', textposition='outside')
+
 
 
     # Aggregate the resolution time by assignee
@@ -769,6 +777,8 @@ def display_tab5(df, assignee_rates):
         labels={'Resolution Time': 'Total Resolution Time (days)'},
         orientation='v'
     )
+    resolution_time_fig.update_traces(texttemplate='%{value}', textposition='outside')
+
 
     grouped_df = df_current_sprint.groupby(['Assignee', 'Status'])['Story Points'].sum().reset_index()
     
@@ -781,6 +791,8 @@ def display_tab5(df, assignee_rates):
         labels={'Story Points': 'Story Points'},
         orientation='v'
     )
+    status_assignee_fig.update_traces(texttemplate='%{value}', textposition='outside')
+
 
     # Display the charts in two columns
     col1, col2 = st.columns(2)
