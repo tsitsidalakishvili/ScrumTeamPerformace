@@ -6,8 +6,8 @@ import matplotlib.pyplot as plt
 from wordcloud import WordCloud
 from io import BytesIO
 import re
-#from streamlit_elements import elements, mui, html
-#from streamlit_elements import dashboard, mui
+from streamlit_elements import elements, mui, html
+from streamlit_elements import dashboard, mui
 import datetime
 
 
@@ -439,7 +439,6 @@ def display_tab2(df, assignee_rates):
         st.subheader("Sprint Retrospective Word Cloud")
         word_cloud_data = generate_word_cloud_from_file("retro.txt")
         st.image(word_cloud_data)
-        st.plotly_chart(assignee_capacity_fig, use_container_width=True)
 
 
     with col2:
@@ -517,28 +516,31 @@ def display_tab3(df, assignee_rates):
         title='Story Points by Project, Assignee, and Sprint'
     )
 
-    # Define the layout for the dashboard items
-    layout = [
-        {"i": "assignee_table_paper", "x": 0, "y": 0, "w": 2, "h": 2},
-        {"i": "client_table_paper", "x": 2, "y": 0, "w": 2, "h": 2},
-        {"i": "spent_vs_delivered_paper", "x": 0, "y": 2, "w": 2, "h": 2},
-        {"i": "points_by_project_paper", "x": 2, "y": 2, "w": 2, "h": 2}
-    ]
+        # Display the charts in two columns
+    col1, col2 = st.columns(2)
 
-    # Render the dashboard
-    with elements("display_tab3"):
-            with dashboard.Grid(layout=layout, cols={'lg': 4}, breakpoints={'lg': 1200}):
-                with mui.Paper("Top Assignees by Ticket Count", key="assignee_table_paper"):
-                    st.table(top_assignees_table)
-                with mui.Paper("Top Clients by Ticket Count", key="client_table_paper"):
-                    st.table(top_clients_table)
-                with mui.Paper("Spent days vs. Delivered Story Points by Project", key="spent_vs_delivered_paper"):
-                    st.plotly_chart(Spent_days_Delivered_SPs, use_container_width=True)
-                with mui.Paper("Story Points by Project, Assignee, and Sprint", key="points_by_project_paper"):
-                    st.plotly_chart(Projects_Assignees_Sprints, use_container_width=True)
+    with col1:
+        st.table(top_assignees_table)
+        st.plotly_chart(Projects_Assignees_Sprints, use_container_width=True)
 
 
-           
+    with col2:
+        st.table(top_clients_table)
+        st.plotly_chart(Spent_days_Delivered_SPs, use_container_width=True)
+
+    # Add a search input for the table
+    search_value = st.text_input("Search for value in table rows:", "", key="search_input_tab2")
+
+    # Filter the DataFrame based on the search input
+    if search_value:
+        filtered_df = df[df.apply(lambda row: search_value.lower() in str(row).lower(), axis=1)]
+    else:
+        filtered_df = df  # If no search input, show the original DataFrame
+
+    # Display the filtered DataFrame as a table
+    st.dataframe(filtered_df)        
+
+
 #--------------------------------------------------------------------------------------------#
 
 
@@ -728,15 +730,6 @@ def display_tab5(df, assignee_rates):
     )
     assignee_capacity_fig.update_xaxes(range=[0, 100])
 
-    status_assignee_fig = px.bar(
-        df_current_sprint,
-        x='Story Points',
-        y='Assignee',
-        color='Status',
-        title=f'Story Points by Status and Assignee in Sprint {current_sprint_number}',
-        labels={'Story Points': 'Story Points'},
-        orientation='v'
-    )
 
     # Convert datetime columns
     df_current_sprint['Created'] = pd.to_datetime(df_current_sprint['Created'], format='%d/%m/%Y %H:%M')
@@ -778,15 +771,15 @@ def display_tab5(df, assignee_rates):
         orientation='v'
     )
 
-        # New chart 1: Bar chart for story points by status and assignee in the current sprint
+    grouped_df = df_current_sprint.groupby(['Assignee', 'Status'])['Story Points'].sum().reset_index()
+    
     status_assignee_fig = px.bar(
-        df_current_sprint,
-        x='Story Points',
-        y='Assignee',
+        grouped_df,
+        x='Assignee',
+        y='Story Points',
         color='Status',
         title=f'Story Points by Status and Assignee in Sprint {current_sprint_number}',
         labels={'Story Points': 'Story Points'},
-        barmode='relative',  # To show story points as percentages of total story points
         orientation='v'
     )
 
@@ -896,8 +889,8 @@ def display_Ad_Hoc_Analysis(df, assignee_rates):
         title='Delivered Story Points and Average Ratio by Sprint (Aleksander Kulbat)'
     )
 
-    st.plotly_chart(line_chart_delivered_sp, line_chart_avg_ratio, line_chart_time_booked, line_chart_delivered_vs_hours, line_chart_delivered_and_ratio, treemap_fig)
-    st.plotly_chart(line_chart_time_booked, line_chart_delivered_vs_hours, line_chart_delivered_and_ratio, treemap_fig)
+    #st.plotly_chart(line_chart_delivered_sp, line_chart_avg_ratio, line_chart_time_booked, line_chart_delivered_vs_hours, line_chart_delivered_and_ratio, treemap_fig)
+    #st.plotly_chart(line_chart_time_booked, line_chart_delivered_vs_hours, line_chart_delivered_and_ratio, treemap_fig)
 
 
 
@@ -905,40 +898,40 @@ def display_Ad_Hoc_Analysis(df, assignee_rates):
 def run_app():
     st.set_page_config(layout='wide')
 
-    # Let users upload the files
-    uploaded_file_iterative = st.sidebar.file_uploader("Choose Iterative CSV file", type="csv")
-    uploaded_file_eigen = st.sidebar.file_uploader("Choose Eigen CSV file", type="csv")
+    # Tabs at the top of the sidebar
+    tabs = {
+        "Costs": display_tab1,
+        "Team Performance": display_tab2,
+        "Individual Performance": display_tab4,
+        "Productivity & Workload": display_tab3,
+        "Sprint": display_tab5,
+        "Ad Hoc Analysis": display_Ad_Hoc_Analysis
+    }
+    
+    selected_tab = st.sidebar.radio("Select a Tab", list(tabs.keys()))
+    if 'selected_tab' not in st.session_state or st.session_state.selected_tab != selected_tab:
+        st.session_state.selected_tab = selected_tab  # Store the selected tab in session state
 
-
+    # Place the file uploaders at the bottom of the sidebar
+    with st.sidebar.expander("Upload Files"):
+        uploaded_file_iterative = st.file_uploader("Choose Iterative CSV file", type="csv")
+        uploaded_file_eigen = st.file_uploader("Choose Eigen CSV file", type="csv")
 
     # If both files are uploaded, process them
     df = None
     if uploaded_file_iterative and uploaded_file_eigen:
-        # Load the data
         df = load_data(uploaded_file_iterative, uploaded_file_eigen)
-
 
     if df is not None:
         # Get the last sprint number
         last_sprint_number = get_last_sprint_number(df)
-
-        # Update the title with the last sprint number
         st.title(f"Dev Sprint 80 - {last_sprint_number}")
 
-        tabs = {
-            "Costs": display_tab1,
-            "Team Performance": display_tab2,
-            "Individual Performance": display_tab4,
-            "Productivity & Workload": display_tab3,
-            "Sprint": display_tab5,
-            "Ad Hoc Analysis": display_Ad_Hoc_Analysis
-        }
+        # Collapsible section for assignee rates
+        with st.expander("Assignee Rates"):
+            assignee_rates = get_assignee_rates(df)  # Retrieve assignee rates
 
-        selected_tab = st.sidebar.selectbox("Tabs", list(tabs.keys()))
-        st.session_state.selected_tab = selected_tab  # Store the selected tab in session state
-
-        assignee_rates = get_assignee_rates(df)  # Retrieve assignee rates
-
+        # Call the appropriate function for the selected tab
         selected_function = tabs[selected_tab]
         selected_function(df, assignee_rates)  # Pass assignee_rates as a parameter
     else:
