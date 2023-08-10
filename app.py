@@ -10,10 +10,6 @@ import datetime
 
 
 
-
-
-
-
 def load_data(uploaded_file_iterative, uploaded_file_eigen):
     if uploaded_file_iterative is not None and uploaded_file_eigen is not None:
         try: 
@@ -803,7 +799,16 @@ def display_tab5(df, assignee_rates):
         st.plotly_chart(added_to_sprint_fig, use_container_width=True)
         st.plotly_chart(status_assignee_fig, use_container_width=True)
 
-        
+    search_value = st.text_input("Search for value in table rows:", "", key="search_input_tab2")
+
+    # Filter the DataFrame based on the search input
+    if search_value:
+        filtered_df = df[df.apply(lambda row: search_value.lower() in str(row).lower(), axis=1)]
+    else:
+        filtered_df = df  # If no search input, show the original DataFrame
+
+    # Display the filtered DataFrame as a table
+    st.dataframe(filtered_df)
 
 
 
