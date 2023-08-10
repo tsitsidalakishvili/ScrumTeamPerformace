@@ -177,7 +177,7 @@ def display_tab1(df, assignee_rates):
                 y0=0,
                 x1=1,
                 y1=1,
-                line=dict(color='black', width=1),
+                line=dict(color='white', width=1),
                 fillcolor='rgba(0, 0, 0, 0)'
             )
         ]
