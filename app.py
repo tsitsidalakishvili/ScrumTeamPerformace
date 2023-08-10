@@ -665,65 +665,90 @@ def display_tab5(df, assignee_rates):
     # Remove whitespace from column names (if any)
     df.columns = df.columns.str.strip()
 
-    sprint_summary = df.groupby('Sprint').agg({'Story Points': 'sum', 'days': 'sum'}).reset_index()
-
     # First, filter the data for the current sprint
     current_sprint_number = get_last_sprint_number(df)  # Assuming you have a function to get the current sprint number
     df_current_sprint = df[df['Sprint'].str.contains(str(current_sprint_number))]
 
-    # Calculate assignee capacity
+    # Assuming the calculate_assignee_capacity function is defined elsewhere
     assignee_capacity = calculate_assignee_capacity(df_current_sprint, df_current_sprint['Avg_Ratio'])
     df_current_sprint['Assignee Capacity'] = assignee_capacity
 
-    # Calculate workload as sum of story points for the filtered data
     workload = df_current_sprint['Story Points'].sum()
-
-    # Calculate Assignee capacity in the current sprint after deducting the workload
     assignee_capacity_current_sprint = assignee_capacity - workload
 
-    # Create a DataFrame to hold the values for the horizontal bar chart
     data = pd.DataFrame({
         'Assignee': df_current_sprint['Assignee'],
         'Workload': workload,
         'Capacity': assignee_capacity_current_sprint
     })
 
-    # Normalize the capacity and workload to percentages (of 100)
     total_capacity = assignee_capacity
     data['Assignee Workload'] = (data['Workload'] / total_capacity) * 100
     data['Assignee Capacity'] = (data['Capacity'] / total_capacity) * 100
 
-    # Create the horizontal bar chart
     assignee_capacity_fig = px.bar(
         data,
         x=['Assignee Capacity', 'Assignee Workload'],
         y='Assignee',
         orientation='h',
-        barmode='relative',  # To show both workload and capacity as percentages of total capacity
+        barmode='relative',
         title=f'Assignee Capacity and Workload in Sprint {current_sprint_number}',
         labels={'value': 'Percentage', 'variable': 'Metric'},
         color_discrete_map={'Assignee Capacity': 'green', 'Assignee Workload': 'red'}
     )
-
-    # Set the range of the X-axis to [0, 100]
     assignee_capacity_fig.update_xaxes(range=[0, 100])
 
-        # Create the horizontal bar chart for assignee capacity and workload
-    assignee_capacity_fig = px.bar(
-        data,
-        x=['Assignee Capacity', 'Assignee Workload'],
+    status_assignee_fig = px.bar(
+        df_current_sprint,
+        x='Story Points',
         y='Assignee',
-        orientation='h',
-        barmode='relative',  # To show both workload and capacity as percentages of total capacity
-        title=f'Assignee Capacity and Workload in Sprint {current_sprint_number}',
-        labels={'value': 'Percentage', 'variable': 'Metric'},
-        color_discrete_map={'Assignee Capacity': 'green', 'Assignee Workload': 'red'}
+        color='Status',
+        title=f'Story Points by Status and Assignee in Sprint {current_sprint_number}',
+        labels={'Story Points': 'Story Points'},
+        orientation='v'
     )
 
-    # Set the range of the X-axis to [0, 100]
-    assignee_capacity_fig.update_xaxes(range=[0, 100])
+    # Convert datetime columns
+    df_current_sprint['Created'] = pd.to_datetime(df_current_sprint['Created'], format='%d/%m/%Y %H:%M')
+    df_current_sprint['Resolved'] = pd.to_datetime(df_current_sprint['Resolved'], format='%d/%m/%Y %H:%M')
 
-    # New chart 1: Bar chart for story points by status and assignee in the current sprint
+    # Calculate the 'Resolution Time' column
+    df_current_sprint['Resolution Time'] = (df_current_sprint['Resolved'] - df_current_sprint['Created']).dt.days
+
+    total_story_points_current_sprint = df_current_sprint['Story Points'].sum()
+
+    after_date = datetime.datetime(2023, 8, 1, 9, 59, 0)
+    df_after_date = df_current_sprint[df_current_sprint['Created'] > after_date]
+    total_story_points_after_date = df_after_date['Story Points'].sum()
+
+    data_added_to_sprint = pd.DataFrame({
+        'Category': ['Total in Current Sprint', 'Added After 01/08/2023 09:59:00'],
+        'Story Points': [total_story_points_current_sprint, total_story_points_after_date]
+    })
+
+    added_to_sprint_fig = px.bar(
+        data_added_to_sprint,
+        x='Category',
+        y='Story Points',
+        title=f'Story Points Added to Sprint {current_sprint_number}',
+        labels={'Category': 'Category', 'Story Points': 'Story Points'},
+        orientation='v'
+    )
+
+
+    # Aggregate the resolution time by assignee
+    resolution_by_assignee = df_current_sprint.groupby('Assignee')['Resolution Time'].sum().reset_index()
+
+    resolution_time_fig = px.bar(
+        resolution_by_assignee,
+        x='Assignee',
+        y='Resolution Time',
+        title=f'Resolution Time per Assignee in Sprint {current_sprint_number}',
+        labels={'Resolution Time': 'Total Resolution Time (days)'},
+        orientation='v'
+    )
+
+        # New chart 1: Bar chart for story points by status and assignee in the current sprint
     status_assignee_fig = px.bar(
         df_current_sprint,
         x='Story Points',
@@ -735,23 +760,16 @@ def display_tab5(df, assignee_rates):
         orientation='v'
     )
 
-    # New chart 2: Pie chart for issue type distribution in the current sprint
-    issue_type_distribution = df_current_sprint['Issue Type'].value_counts()
-    issue_type_fig = go.Figure(data=[go.Pie(labels=issue_type_distribution.index, values=issue_type_distribution.values)])
-    issue_type_fig.update_traces(textinfo='percent+label', title=f'Issue Type Distribution in Sprint {current_sprint_number}')
+    # Display the charts in two columns
+    col1, col2 = st.columns(2)
 
-    # New chart 3: Pie chart for priority distribution in the current sprint
-    priority_distribution = df_current_sprint['Priority'].value_counts()
-    priority_fig = go.Figure(data=[go.Pie(labels=priority_distribution.index, values=priority_distribution.values)])
-    priority_fig.update_traces(textinfo='percent+label', title=f'Priority Distribution in {current_sprint_number}')
+    with col1:
+        st.plotly_chart(assignee_capacity_fig, use_container_width=True)
+        st.plotly_chart(resolution_time_fig, use_container_width=True)
 
-    # New chart 4: Pie chart for blockers - issues that have status "Blocked"
-    blockers_df = df_current_sprint[df_current_sprint['Status'] == 'Blocked']
-
-    # Display the charts and table using the layout functions
-    layout_1x1(assignee_capacity_fig)
-    layout_3x1(priority_fig, blockers_df, issue_type_fig)
-    layout_1x1(status_assignee_fig)
+    with col2:
+        st.plotly_chart(added_to_sprint_fig, use_container_width=True)
+        st.plotly_chart(status_assignee_fig, use_container_width=True)
 
 
 
