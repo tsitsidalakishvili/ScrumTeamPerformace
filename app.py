@@ -117,9 +117,7 @@ def create_combined_chart(df, sprint_summary, sprint_avg_ratio):
         xaxis=dict(title='Sprint'),
         yaxis=dict(title='Normalized Value'),
         legend=dict(title='Metrics'),
-        font=dict(color='black'),
-        plot_bgcolor='white',
-        paper_bgcolor='white'
+        font=dict(color='black')
     )
 
     # Apply styling to the bars and markers
