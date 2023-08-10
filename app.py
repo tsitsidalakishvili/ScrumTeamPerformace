@@ -12,49 +12,6 @@ import datetime
 
 
 
-from streamlit_elements import dashboard, mui, elements
-
-def display_dashboard(df, assignee_rates):
-
-
-    with elements("dashboard"):
-
-        from streamlit_elements import dashboard
-
-        # First, build a default layout for every element you want to include in your dashboard
-
-        layout = [
-            # Parameters: element_identifier, x_pos, y_pos, width, height, [item properties...]
-            dashboard.Item("first_item", 0, 0, 2, 2),
-            dashboard.Item("second_item", 2, 0, 2, 2, isDraggable=False, moved=False),
-            dashboard.Item("third_item", 0, 2, 1, 1, isResizable=False),
-        ]
-
-        # Next, create a dashboard layout using the 'with' syntax. It takes the layout
-        # as first parameter, plus additional properties you can find in the GitHub links below.
-
-        with dashboard.Grid(layout):
-            mui.Paper("First item", key="first_item")
-            mui.Paper("Second item (cannot drag)", key="second_item")
-            mui.Paper("Third item (cannot resize)", key="third_item")
-
-        # If you want to retrieve updated layout values as the user move or resize dashboard items,
-        # you can pass a callback to the onLayoutChange event parameter.
-
-        def handle_layout_change(updated_layout):
-            # You can save the layout in a file, or do anything you want with it.
-            # You can pass it back to dashboard.Grid() if you want to restore a saved layout.
-            print(updated_layout)
-
-        with dashboard.Grid(layout, onLayoutChange=handle_layout_change):
-            mui.Paper("First item", key="first_item")
-            mui.Paper("Second item (cannot drag)", key="second_item")
-            mui.Paper("Third item (cannot resize)", key="third_item")
-
-
-
-            
-
 
 
 
@@ -939,82 +896,9 @@ def display_Ad_Hoc_Analysis(df, assignee_rates):
         title='Delivered Story Points and Average Ratio by Sprint (Aleksander Kulbat)'
     )
 
-    layout_2x3(line_chart_delivered_sp, line_chart_avg_ratio, line_chart_time_booked, line_chart_delivered_vs_hours, line_chart_delivered_and_ratio, treemap_fig)
-    layout_2x2(line_chart_time_booked, line_chart_delivered_vs_hours, line_chart_delivered_and_ratio, treemap_fig)
+    st.plotly_chart(line_chart_delivered_sp, line_chart_avg_ratio, line_chart_time_booked, line_chart_delivered_vs_hours, line_chart_delivered_and_ratio, treemap_fig)
+    st.plotly_chart(line_chart_time_booked, line_chart_delivered_vs_hours, line_chart_delivered_and_ratio, treemap_fig)
 
-
-    #---------------------------------------------------------------------------------------------------#
-# Function for 1x1 grid layout
-def layout_1x1(chart):
-    # Display the chart in a one-row-one-column grid
-    st.plotly_chart(chart, use_container_width=True)
-
-# Function for 1x1 grid layout
-def layout_1x1_T(table):
-    # Display the chart in a one-row-one-column grid
-    st.table(table)
-
-import streamlit as st
-
-# Function for 2x1 grid layout
-def layout_2x1(chart1, chart2):
-    # Display the charts in a one-row-two-column grid
-    col1, col2 = st.columns(2)
-
-    with col1:
-        st.plotly_chart(chart1, use_container_width=True)
-
-    with col2:
-        st.plotly_chart(chart2, use_container_width=True)
-
-# Function for 3x1 grid layout
-def layout_3x1(chart1, table, chart3):
-    # Display the charts in a one-row-three-column grid
-    col1, col2, col3 = st.columns(3)
-
-    with col1:
-        st.plotly_chart(chart1, use_container_width=True)
-
-    with col2:
-        st.table(table)
-
-    with col3:
-        st.plotly_chart(chart3, use_container_width=True)
-
-
-
-# Function for 2x2 grid layout
-def layout_2x2(chart1, chart2, chart3, chart4):
-    col1, col2 = st.columns(2)
-
-    with col1:
-        st.plotly_chart(chart1, use_container_width=True)
-
-        st.plotly_chart(chart3, use_container_width=True)
-
-    with col2:
-        st.plotly_chart(chart2, use_container_width=True)
-
-        st.plotly_chart(chart4, use_container_width=True)
-
-# Function for 2x3 grid layout
-def layout_2x3(chart1, chart2, chart3, chart4, chart5, chart6):
-    col1, col2, col3 = st.columns(3)
-
-    with col1:
-        st.plotly_chart(chart1, use_container_width=True)
-
-        st.plotly_chart(chart4, use_container_width=True)
-
-    with col2:
-        st.plotly_chart(chart2, use_container_width=True)
-
-        st.plotly_chart(chart5, use_container_width=True)
-
-    with col3:
-        st.plotly_chart(chart3, use_container_width=True)
-
-        st.plotly_chart(chart6, use_container_width=True)
 
 
 #---------------------------------------------------------------------------------------------------#
@@ -1042,7 +926,6 @@ def run_app():
         st.title(f"Dev Sprint 80 - {last_sprint_number}")
 
         tabs = {
-            "Dashboard": display_dashboard,
             "Costs": display_tab1,
             "Team Performance": display_tab2,
             "Individual Performance": display_tab4,
