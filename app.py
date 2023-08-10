@@ -158,7 +158,7 @@ def display_tab1(df, assignee_rates):
             y=y,
             text=text,
             showarrow=False,
-            font=dict(color='black'),
+            font=dict(color='white'),
             xshift=10,
             align='left'
         )
