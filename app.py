@@ -7,6 +7,7 @@ from wordcloud import WordCloud
 from io import BytesIO
 import re
 import datetime
+import numpy as np
 
 
 
@@ -82,8 +83,7 @@ def create_combined_chart(df, sprint_summary, sprint_avg_ratio):
         sprint_summary['Story Points'].max() - sprint_summary['Story Points'].min())
     normalized_worked_days = (sprint_summary['days'] - sprint_summary['days'].min()) / (
         sprint_summary['days'].max() - sprint_summary['days'].min())
-    normalized_avg_ratio = (sprint_avg_ratio['Avg_Ratio'] - sprint_avg_ratio['Avg_Ratio'].min()) / (
-        sprint_avg_ratio['Avg_Ratio'].max() - sprint_avg_ratio['Avg_Ratio'].min())
+
 
     # Create the combined chart
     combined_chart = go.Figure()
@@ -101,19 +101,12 @@ def create_combined_chart(df, sprint_summary, sprint_avg_ratio):
         text=sprint_summary['days'],
         textposition='auto'
     ))
-    combined_chart.add_trace(go.Scatter(
-        x=sprint_avg_ratio['Sprint'],
-        y=normalized_avg_ratio,
-        name='Average Ratio',
-        mode='lines+markers',
-        line=dict(color='red'),
-        marker=dict(symbol='circle', size=8, color='red')
-    ))
+
 
     # Update the chart layout and styling
     combined_chart.update_layout(
         barmode='group',
-        title='Team Average Ratio and Delivered Story Points vs. Worked days by Sprint',
+        title='Delivered Story Points vs. Worked days by Sprint',
         xaxis=dict(title='Sprint'),
         yaxis=dict(title='Normalized Value'),
         legend=dict(title='Metrics'),
@@ -694,6 +687,11 @@ def display_tab4(df, assignee_rates):
 #----------------------------------------------------------------------------------------#
 
 
+import datetime
+import pandas as pd
+import plotly.express as px
+import streamlit as st
+
 def display_tab5(df, assignee_rates):
     # Remove whitespace from column names (if any)
     df.columns = df.columns.str.strip()
@@ -732,24 +730,50 @@ def display_tab5(df, assignee_rates):
     assignee_capacity_fig.update_xaxes(range=[0, 100])
     assignee_capacity_fig.update_traces(texttemplate='%{value:.1f}', textposition='inside')
 
-
-
-
     # Convert datetime columns
     df_current_sprint['Created'] = pd.to_datetime(df_current_sprint['Created'], format='%d/%m/%Y %H:%M')
     df_current_sprint['Resolved'] = pd.to_datetime(df_current_sprint['Resolved'], format='%d/%m/%Y %H:%M')
 
-    # Calculate the 'Resolution Time' column
-    df_current_sprint['Resolution Time'] = (df_current_sprint['Resolved'] - df_current_sprint['Created']).dt.days
+    # Define the start and end dates for the current sprint
+    start_date = pd.to_datetime("02/Aug/23 2:03 PM", format='%d/%b/%y %I:%M %p')
+    end_date = pd.to_datetime("23/Aug/23 2:03 PM", format='%d/%b/%y %I:%M %p')
+
+    # Filter tasks that were both created and resolved within the current sprint
+    df_current_sprint_filtered = df_current_sprint[
+        (df_current_sprint['Created'] >= start_date) & 
+        (df_current_sprint['Resolved'] <= end_date)
+    ]
+
+    # Calculate the 'Resolution Time' column for the filtered tasks
+    df_current_sprint = df_current_sprint.dropna(subset=['Resolved'])
+
+    df_current_sprint_filtered['Resolution Time'] = (df_current_sprint_filtered['Resolved'] - df_current_sprint_filtered['Created']).dt.days
+
+    # ... Rest of your code ...
+
+    # Aggregate the resolution time by assignee (use the filtered data)
+    resolution_by_assignee = df_current_sprint_filtered.groupby('Assignee')['Resolution Time'].sum().reset_index()
+
+    resolution_time_fig = px.bar(
+        resolution_by_assignee,
+        x='Assignee',
+        y='Resolution Time',
+        title=f'Under construction - Resolution Time per Assignee in Sprint {current_sprint_number}',
+        labels={'Resolution Time': 'Total Resolution Time (days)'},
+        orientation='v'
+    )
+    resolution_time_fig.update_traces(texttemplate='%{value}', textposition='outside')
+
+        # Define the start date for the current sprint
+    start_date = pd.to_datetime("02/Aug/23 2:03 PM", format='%d/%b/%y %I:%M %p')
 
     total_story_points_current_sprint = df_current_sprint['Story Points'].sum()
 
-    after_date = datetime.datetime(2023, 8, 1, 9, 59, 0)
-    df_after_date = df_current_sprint[df_current_sprint['Created'] > after_date]
+    df_after_date = df_current_sprint[df_current_sprint['Created'] > start_date]
     total_story_points_after_date = df_after_date['Story Points'].sum()
 
     data_added_to_sprint = pd.DataFrame({
-        'Category': ['Total in Current Sprint', 'Added After 01/08/2023 09:59:00'],
+        'Category': ['Total in Current Sprint', f'Added After {start_date.strftime("%d/%b/%Y %I:%M %p")}'],
         'Story Points': [total_story_points_current_sprint, total_story_points_after_date]
     })
 
@@ -765,20 +789,6 @@ def display_tab5(df, assignee_rates):
 
 
 
-    # Aggregate the resolution time by assignee
-    resolution_by_assignee = df_current_sprint.groupby('Assignee')['Resolution Time'].sum().reset_index()
-
-    resolution_time_fig = px.bar(
-        resolution_by_assignee,
-        x='Assignee',
-        y='Resolution Time',
-        title=f'Under construction - Resolution Time per Assignee in Sprint {current_sprint_number}',
-        labels={'Resolution Time': 'Total Resolution Time (days)'},
-        orientation='v'
-    )
-    resolution_time_fig.update_traces(texttemplate='%{value}', textposition='outside')
-
-
     grouped_df = df_current_sprint.groupby(['Assignee', 'Status'])['Story Points'].sum().reset_index()
     
     status_assignee_fig = px.bar(
@@ -792,13 +802,36 @@ def display_tab5(df, assignee_rates):
     )
     status_assignee_fig.update_traces(texttemplate='%{value}', textposition='outside')
 
+    # Group data by CoreTimeClient and calculate the sum of hours
+    hours_by_client = df.groupby('CoreTimeClient')['Hours'].sum().reset_index()
 
+    # Create the 3D pie chart
+    fig = go.Figure(data=[go.Pie(
+        labels=hours_by_client['CoreTimeClient'],
+        values=hours_by_client['Hours'],
+        hovertemplate="%{label}: %{value} hours",
+        textinfo='label+percent',
+        pull=[0.1] * len(hours_by_client)  # Set the distance of each sector from the center
+    )])
+
+    fig.update_layout(
+        title="Hours by CoreTimeClient",
+        scene=dict(
+            aspectratio=dict(x=1, y=1, z=0.7),
+            camera_eye=dict(x=1.2, y=1.2, z=0.6),
+            dragmode="turntable",
+        ),
+        showlegend=False  # Hide the legend for a cleaner look
+    )
+
+
+    
     # Display the charts in two columns
     col1, col2 = st.columns(2)
 
     with col1:
         st.plotly_chart(assignee_capacity_fig, use_container_width=True)
-        st.plotly_chart(resolution_time_fig, use_container_width=True)
+        st.plotly_chart(fig, use_container_width=True)
 
     with col2:
         st.plotly_chart(added_to_sprint_fig, use_container_width=True)
@@ -814,13 +847,6 @@ def display_tab5(df, assignee_rates):
 
     # Display the filtered DataFrame as a table
     st.dataframe(filtered_df)
-
-
-
-
-
-
-
 
 
 
