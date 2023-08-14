@@ -8,6 +8,8 @@ from io import BytesIO
 import re
 import datetime
 import numpy as np
+import datetime
+import pandas as pd
 
 
 
@@ -687,10 +689,7 @@ def display_tab4(df, assignee_rates):
 #----------------------------------------------------------------------------------------#
 
 
-import datetime
-import pandas as pd
-import plotly.express as px
-import streamlit as st
+
 
 def display_tab5(df, assignee_rates):
     # Remove whitespace from column names (if any)
@@ -802,8 +801,10 @@ def display_tab5(df, assignee_rates):
     )
     status_assignee_fig.update_traces(texttemplate='%{value}', textposition='outside')
 
-    # Group data by CoreTimeClient and calculate the sum of hours
-    hours_by_client = df.groupby('CoreTimeClient')['Hours'].sum().reset_index()
+    # Filter the DataFrame for the current sprint and then group by CoreTimeClient
+    df_current_sprint_hours = df[df['Sprint'].str.contains(str(current_sprint_number))]
+    hours_by_client = df_current_sprint_hours.groupby('CoreTimeClient')['Hours'].sum().reset_index()
+
 
     # Create the 3D pie chart
     fig = go.Figure(data=[go.Pie(
@@ -815,7 +816,7 @@ def display_tab5(df, assignee_rates):
     )])
 
     fig.update_layout(
-        title="Hours by CoreTimeClient",
+        title="Worked Hours in the Current SprintS by CoreTimeClient",
         scene=dict(
             aspectratio=dict(x=1, y=1, z=0.7),
             camera_eye=dict(x=1.2, y=1.2, z=0.6),
