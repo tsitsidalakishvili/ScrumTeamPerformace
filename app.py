@@ -79,38 +79,31 @@ def display_assignee_rates(assignee_rates):
 #--------------------------------------------------------------------------------------------------------------#
 
 
+
 def create_combined_chart(df, sprint_summary, sprint_avg_ratio):
-    # Normalize the data
-    normalized_story_points = (sprint_summary['Story Points'] - sprint_summary['Story Points'].min()) / (
-        sprint_summary['Story Points'].max() - sprint_summary['Story Points'].min())
-    normalized_worked_days = (sprint_summary['days'] - sprint_summary['days'].min()) / (
-        sprint_summary['days'].max() - sprint_summary['days'].min())
-
-
     # Create the combined chart
     combined_chart = go.Figure()
     combined_chart.add_trace(go.Bar(
         x=sprint_summary['Sprint'],
-        y=normalized_story_points,
+        y=sprint_summary['Story Points'],
         name='Story Points',
         text=sprint_summary['Story Points'],
         textposition='auto'
     ))
     combined_chart.add_trace(go.Bar(
         x=sprint_summary['Sprint'],
-        y=normalized_worked_days,
+        y=sprint_summary['days'],
         name='days',
         text=sprint_summary['days'],
         textposition='auto'
     ))
-
 
     # Update the chart layout and styling
     combined_chart.update_layout(
         barmode='group',
         title='Delivered Story Points vs. Worked days by Sprint',
         xaxis=dict(title='Sprint'),
-        yaxis=dict(title='Normalized Value'),
+        yaxis=dict(title='Value'),  # Changed the y-axis title since it's no longer normalized
         legend=dict(title='Metrics'),
         font=dict(color='black')
     )
@@ -124,7 +117,6 @@ def create_combined_chart(df, sprint_summary, sprint_avg_ratio):
             trace.textfont.size = 14
 
     return combined_chart
-
 
 #--------------------------------------------------------------------------------------------------------------#
 
@@ -539,11 +531,19 @@ def display_tab3(df, assignee_rates):
 
 
 #-------------------------------------------------------------------------------------------------------------------------------------#
-def calculate_assignee_capacity(df, avg_ratio, sprint_duration_weeks=3, working_days_per_week=5):
+def calculate_assignee_capacity(df, avg_ratio, sprint_duration_weeks=3, planning_days=1, working_days_per_week=5):
+    # Calculate the number of development days
+    dev_days = (sprint_duration_weeks * working_days_per_week) - planning_days
+    
     total_story_points_delivered = df['Story Points'].sum()
-    total_working_days = sprint_duration_weeks * working_days_per_week
-    avg_daily_story_point_rate = total_story_points_delivered / total_working_days
-    assignee_capacity = avg_ratio * total_working_days
+    
+    # Calculate average daily story point rate using only development days
+    #avg_daily_story_point_rate = total_story_points_delivered / dev_days
+
+    # Capacity is calculated using the total number of working days, including planning
+    total_working_days = (sprint_duration_weeks * dev_days)
+    assignee_capacity = avg_ratio * dev_days
+
     return assignee_capacity
 
 #-------------------------------------------------------------------------------------------------------------------------------------#
@@ -619,6 +619,7 @@ def display_tab4(df, assignee_rates):
     
     # Calculate average ratio by issue type and assignee
     avg_ratio_data = df.groupby(['Issue Type', 'Assignee'])['Avg_Ratio'].mean().reset_index()
+    
     
     # Sum 'Task' and 'Sub-task' values and update the 'Issue Type' accordingly
     avg_ratio_data.loc[avg_ratio_data['Issue Type'].isin(['Task', 'Sub-task']), 'Issue Type'] = 'Task & Sub-task'
