@@ -59,14 +59,24 @@ def load_data(uploaded_file_iterative, uploaded_file_eigen):
         return None
 
 #-------------------------------------------------------------------------------------------------------------------------------------#
+DEFAULT_RATES = {
+    "Pawel G": 42.80,
+    "Marcin Ko": 42.80,
+    "Marcin Kl": 26.75,
+    "Lukasz": 31.03,
+    "Alek D": 26.75,
+    "Dawid N": 26.75
+}
+
 
 
 def get_assignee_rates(df):
     assignee_rates = {}
-    for assignee in df['Assignee'].unique():
-        key = f'rate_{assignee}'  # Unique key based on assignee name
-        rate = st.sidebar.number_input(label=f"Rate for {assignee}", value=0, step=1, key=key)
-        assignee_rates[assignee] = rate
+    # Check for assignees with missing rates or assignees not in the dataframe and set them to default
+    for assignee, default_rate in DEFAULT_RATES.items():
+        if assignee not in assignee_rates or assignee_rates[assignee] is None:
+            assignee_rates[assignee] = default_rate
+
     return assignee_rates
 
 def display_assignee_rates(assignee_rates):
@@ -939,6 +949,14 @@ def display_Ad_Hoc_Analysis(df, assignee_rates):
     #st.plotly_chart(line_chart_delivered_sp, line_chart_avg_ratio, line_chart_time_booked, line_chart_delivered_vs_hours, line_chart_delivered_and_ratio, treemap_fig)
     #st.plotly_chart(line_chart_time_booked, line_chart_delivered_vs_hours, line_chart_delivered_and_ratio, treemap_fig)
 
+DEFAULT_RATES = {
+    "Pawel G": 42.80,
+    "Marcin Ko": 42.80,
+    "Marcin Kl": 26.75,
+    "Lukasz": 31.03,
+    "Alek D": 26.75,
+    "Dawid N": 26.75
+}
 
 
 #---------------------------------------------------------------------------------------------------#
