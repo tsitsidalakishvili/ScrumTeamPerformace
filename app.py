@@ -179,34 +179,34 @@ def display_tab1(df, assignee_rates):
             )
         ]
     )
-        treemap_data = df.groupby(['Sprint', 'Assignee', 'CoreTimeClient', 'CoreTimeProject', 'CoreTimePhase', 'CoreTimeActivity'])['Cost'].sum().reset_index()
-        treemap_fig = px.treemap(
-            treemap_data,
-            path=['Sprint', 'Assignee','CoreTimeClient', 'CoreTimeProject', 'CoreTimePhase', 'CoreTimeActivity'],
-            values='Cost',
-            title='Cost by CoreTimeClient, Project, Phase, and Activity'
-        )
-        treemap_fig.update_layout(
-            height=600,
-            width=800,
-            margin=dict(l=0, r=0, t=50, b=0),
-            plot_bgcolor='rgba(0, 0, 0, 0)',
-            paper_bgcolor='rgba(0, 0, 0, 0)',
-            shapes=[
-                dict(
-                    type='rect',
-                    xref='paper',
-                    yref='paper',
-                    x0=0,
-                    y0=0,
-                    x1=1,
-                    y1=1,
-                    line=dict(color='black', width=1),
-                    fillcolor='rgba(0, 0, 0, 0)'
-                )
-            ]
-        )
-    
+    treemap_data = df.groupby(['Sprint', 'Assignee', 'CoreTimeClient', 'CoreTimeProject', 'CoreTimePhase', 'CoreTimeActivity'])['Cost'].sum().reset_index()
+    treemap_fig = px.treemap(
+        treemap_data,
+        path=['Sprint', 'Assignee','CoreTimeClient', 'CoreTimeProject', 'CoreTimePhase', 'CoreTimeActivity'],
+        values='Cost',
+        title='Cost by CoreTimeClient, Project, Phase, and Activity'
+    )
+    treemap_fig.update_layout(
+        height=600,
+        width=800,
+        margin=dict(l=0, r=0, t=50, b=0),
+        plot_bgcolor='rgba(0, 0, 0, 0)',
+        paper_bgcolor='rgba(0, 0, 0, 0)',
+        shapes=[
+            dict(
+                type='rect',
+                xref='paper',
+                yref='paper',
+                x0=0,
+                y0=0,
+                x1=1,
+                y1=1,
+                line=dict(color='black', width=1),
+                fillcolor='rgba(0, 0, 0, 0)'
+            )
+        ]
+    )
+
     line_chart_story_points = px.line(
         df.groupby(['Work date', 'CoreTimeClient'])['Story Points'].sum().reset_index(),
         x='Work date',
