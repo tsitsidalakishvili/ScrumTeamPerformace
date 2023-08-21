@@ -179,10 +179,10 @@ def display_tab1(df, assignee_rates):
             )
         ]
     )
-    treemap_data = df.groupby(['CoreTimeClient', 'CoreTimeProject', 'CoreTimePhase', 'CoreTimeActivity'])['Cost'].sum().reset_index()
+        treemap_data = df.groupby(['Sprint', 'Assignee', 'CoreTimeClient', 'CoreTimeProject', 'CoreTimePhase', 'CoreTimeActivity'])['Cost'].sum().reset_index()
     treemap_fig = px.treemap(
         treemap_data,
-        path=['CoreTimeClient', 'CoreTimeProject', 'CoreTimePhase', 'CoreTimeActivity'],
+        path=['Sprint', 'Assignee','CoreTimeClient', 'CoreTimeProject', 'CoreTimePhase', 'CoreTimeActivity'],
         values='Cost',
         title='Cost by CoreTimeClient, Project, Phase, and Activity'
     )
