@@ -23,7 +23,33 @@ def read_csv_files(uploaded_file_iterative, uploaded_file_eigen):
         st.warning(f"Error reading the files: {e}")
         return None, None
 
+sprint_bins = [
+    ('09 Nov 2022', '30 Nov 2022'),
+    ('30 Nov 2022', '21 Dec 2022'),
+    ('04 Jan 2023', '25 Jan 2023'),
+    ('25 Jan 2023', '15 Feb 2023'),
+    ('15 Feb 2023', '08 Mar 2023'),
+    ('08 Mar 2023', '29 Mar 2023'),
+    ('29 Mar 2023', '19 Apr 2023'),
+    ('19 Apr 2023', '10 May 2023'),
+    ('10 May 2023', '31 May 2023'),
+    ('31 May 2023', '21 June 2023'),
+    ('21 June 2023', '12 July 2023'),
+    ('12 July 2023', '2 August 2023'),
+    ('2 August 2023', '23 August 2023'),
+    ('23 August 2023', '13 September 2023')
 
+]
+
+# Convert the date strings to datetime objects
+sprint_bins = [(pd.to_datetime(start), pd.to_datetime(end)) for start, end in sprint_bins]
+
+
+def get_sprint(date, sprint_bins):
+    for i, (start_date, end_date) in enumerate(sprint_bins):
+        if start_date <= date <= end_date:
+            return f"Sprint {80 + i}"
+    return None
 
 
 def preprocess_data(Iterative, Eigen):
@@ -64,7 +90,8 @@ def extract_key_ID(df):
 
 
 
-def merge_data(Iterative, Eigen):
+def merge_data(Iterative, Eigen, sprint_bins):
+
     merged_df = pd.merge(Iterative, Eigen, on='Issue key', how='inner')
     merged_df = merged_df.rename(columns={'Assignee_x': 'Assignee', 'Issue Type_x': 'Issue Type'})
     merged_df = merged_df.drop('Issue Type_y', axis=1)
@@ -84,17 +111,18 @@ def merge_data(Iterative, Eigen):
     grouped_df['days'] = grouped_df['Hours'] / 8
     grouped_df['Avg_Ratio'] = grouped_df['Story Points'] / grouped_df['days']
     grouped_df['Work date'] = pd.to_datetime(grouped_df['Work date'])
-
+    grouped_df['Created'] = pd.to_datetime(grouped_df['Created'])
+    grouped_df['Sprint'] = grouped_df['Created'].apply(lambda x: get_sprint(x, sprint_bins))
     return grouped_df
 
 
-def load_data(uploaded_file_iterative, uploaded_file_eigen):
+def load_data(uploaded_file_iterative, uploaded_file_eigen, sprint_bins):
     if uploaded_file_iterative is not None and uploaded_file_eigen is not None:
         Iterative, Eigen = read_csv_files(uploaded_file_iterative, uploaded_file_eigen)
         if Iterative is not None and Eigen is not None:
             Iterative, Eigen = preprocess_data(Iterative, Eigen)
             if Iterative is not None and Eigen is not None:
-                df = merge_data(Iterative, Eigen)
+                df = merge_data(Iterative, Eigen, sprint_bins)
                 return df
             else:
                 return None
@@ -473,6 +501,8 @@ def display_tab2(df, assignee_rates):
 
     # First, filter the data for the current sprint
     current_sprint_number = get_last_sprint_number(df)  # Assuming you have a function to get the current sprint number
+    # Replace NaN values with an empty string before checking for containment
+    df['Sprint'] = df['Sprint'].astype(str)
     df_current_sprint = df[df['Sprint'].str.contains(str(current_sprint_number))]
 
         # Calculate assignee capacity
@@ -753,13 +783,16 @@ def calculate_assignee_capacity(df, avg_ratio, sprint_duration_weeks=3, planning
     return assignee_capacity
 
 
-def display_tab5(df, assignee_rates):
+def display_tab5(df, assignee_rates, sprint_bins):
     # Remove whitespace from column names (if any)
     df.columns = df.columns.str.strip()
 
     # First, filter the data for the current sprint
     current_sprint_number = get_last_sprint_number(df)  # Assuming you have a function to get the current sprint number
-    df_current_sprint = df[df['Sprint'].str.contains(str(current_sprint_number))]
+    
+    # Handle NaN values when filtering by string contains
+    mask = df['Sprint'].astype(str).str.contains(str(current_sprint_number)).fillna(False)
+    df_current_sprint = df[mask]
 
     # Assuming the calculate_assignee_capacity function is defined elsewhere
     assignee_capacity = calculate_assignee_capacity(df_current_sprint, df_current_sprint['Avg_Ratio'])
@@ -1016,7 +1049,7 @@ def run_app():
 
     # Tabs at the top of the sidebar
     tabs = {
-        "Current Sprint": display_tab5,
+        #"Current Sprint": display_tab5,
         "Team Performance": display_tab2,
         "Individual Performance": display_tab4,
         "Costs": display_tab1,
@@ -1036,7 +1069,7 @@ def run_app():
     # If both files are uploaded, process them
     df = None
     if uploaded_file_iterative and uploaded_file_eigen:
-        df = load_data(uploaded_file_iterative, uploaded_file_eigen)
+        df = load_data(uploaded_file_iterative, uploaded_file_eigen, sprint_bins)
 
     if df is not None:
         # Get the last sprint number
