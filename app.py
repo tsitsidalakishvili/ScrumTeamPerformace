@@ -821,7 +821,7 @@ def display_tab5(df, assignee_rates):
     resolution_time_fig.update_traces(texttemplate='%{value}', textposition='outside')
 
         # Define the start date for the current sprint
-    start_date = pd.to_datetime("02/Aug/23 2:03 PM", format='%d/%b/%y %I:%M %p')
+    start_date = pd.to_datetime("23/Aug/23 2:03 PM", format='%d/%b/%y %I:%M %p')
 
     total_story_points_current_sprint = df_current_sprint['Story Points'].sum()
 
