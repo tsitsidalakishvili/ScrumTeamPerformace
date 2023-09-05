@@ -792,8 +792,8 @@ def display_tab5(df, assignee_rates):
     df_current_sprint['Resolved'] = pd.to_datetime(df_current_sprint['Resolved'], format='%d/%m/%Y %H:%M')
 
     # Define the start and end dates for the current sprint
-    start_date = pd.to_datetime("02/Aug/23 2:03 PM", format='%d/%b/%y %I:%M %p')
-    end_date = pd.to_datetime("23/Aug/23 2:03 PM", format='%d/%b/%y %I:%M %p')
+    start_date = pd.to_datetime("23/Aug/23 2:03 PM", format='%d/%b/%y %I:%M %p')
+    end_date = pd.to_datetime("13/Sep/23 2:03 PM", format='%d/%b/%y %I:%M %p')
 
     # Filter tasks that were both created and resolved within the current sprint
     df_current_sprint_filtered = df_current_sprint[
