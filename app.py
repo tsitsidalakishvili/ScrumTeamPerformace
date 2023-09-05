@@ -387,7 +387,11 @@ def display_tab2(df, assignee_rates):
     # Remove whitespace from column names (if any)
     df.columns = df.columns.str.strip()
 
-    sprint_summary = df.groupby('Sprint').agg({'Story Points': 'sum', 'days': 'sum'}).reset_index()
+    # Filter the DataFrame to only include rows where 'Done' is True
+    done_df = df[df['Status'] == 'Done']
+
+    # Group by 'Sprint' and aggregate based on the 'Story Points' and 'days' columns
+    sprint_summary = done_df.groupby('Sprint').agg({'Story Points': 'sum', 'days': 'sum'}).reset_index()
 
 
         # Calculate the total story points and total days for each sprint
@@ -792,8 +796,8 @@ def display_tab5(df, assignee_rates):
     df_current_sprint['Resolved'] = pd.to_datetime(df_current_sprint['Resolved'], format='%d/%m/%Y %H:%M')
 
     # Define the start and end dates for the current sprint
-    start_date = pd.to_datetime("23/Aug/23 2:03 PM", format='%d/%b/%y %I:%M %p')
-    end_date = pd.to_datetime("13/Sep/23 2:03 PM", format='%d/%b/%y %I:%M %p')
+    start_date = pd.to_datetime("02/Aug/23 2:03 PM", format='%d/%b/%y %I:%M %p')
+    end_date = pd.to_datetime("23/Aug/23 2:03 PM", format='%d/%b/%y %I:%M %p')
 
     # Filter tasks that were both created and resolved within the current sprint
     df_current_sprint_filtered = df_current_sprint[
@@ -821,7 +825,7 @@ def display_tab5(df, assignee_rates):
     resolution_time_fig.update_traces(texttemplate='%{value}', textposition='outside')
 
         # Define the start date for the current sprint
-    start_date = pd.to_datetime("23/Aug/23 2:03 PM", format='%d/%b/%y %I:%M %p')
+    start_date = pd.to_datetime("02/Aug/23 2:03 PM", format='%d/%b/%y %I:%M %p')
 
     total_story_points_current_sprint = df_current_sprint['Story Points'].sum()
 
