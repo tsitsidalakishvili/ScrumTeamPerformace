@@ -1,5 +1,8 @@
 import streamlit as st
 import pandas as pd
+import datetime
+import streamlit as st
+import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 import matplotlib.pyplot as plt
@@ -11,49 +14,92 @@ import numpy as np
 import datetime
 import pandas as pd
 
+def read_csv_files(uploaded_file_iterative, uploaded_file_eigen):
+    try:
+        Iterative = pd.read_csv(uploaded_file_iterative, encoding='iso-8859-1')
+        Eigen = pd.read_csv(uploaded_file_eigen, encoding='iso-8859-1')
+        return Iterative, Eigen
+    except Exception as e:
+        st.warning(f"Error reading the files: {e}")
+        return None, None
+
+
+
+
+def preprocess_data(Iterative, Eigen):
+    if 'Issue summary' in Iterative:
+        Iterative = Iterative[['Issue summary', 'Hours', 'Full name', 'Work date', 'CoreTime', 'Issue Type', 'Issue Status']]
+        Iterative = extract_key_ID(Iterative)
+        Iterative = Iterative.rename(columns={'Full name': 'Assignee'})
+    else:
+        st.warning("Issue summary not found in Iterative file.")
+        return None, None
+    
+
+    eigen_columns = ['Summary', 'Issue key', 'Status', 'Resolved', 'Epic Link Summary', 'Labels', 'Priority', 'Issue Type', 
+                     'Assignee', 'Creator', 'Sprint', 'Created', 'Resolution', 'Custom field (Story Points)',
+                     'Custom field (CoreTimeActivity)', 'Custom field (CoreTimeClient)', 'Custom field (CoreTimePhase)', 
+                     'Custom field (CoreTimeProject)', 'Project name']
+    
+    if all(col in Eigen for col in eigen_columns):
+        Eigen = Eigen[eigen_columns]
+        Eigen = Eigen.rename(columns={'Custom field (CoreTimeActivity)': 'CoreTimeActivity', 
+                                      'Custom field (CoreTimeClient)': 'CoreTimeClient',
+                                      'Custom field (CoreTimePhase)': 'CoreTimePhase', 
+                                      'Custom field (CoreTimeProject)': 'CoreTimeProject', 
+                                      'Epic Link Summary': 'Epic', 
+                                      'Custom field (Story Points)': 'Story Points'})
+    else:
+        st.warning("Some necessary columns are missing in Eigen file.")
+        return None, None
+
+    return Iterative, Eigen
+
+
+def extract_key_ID(df):
+    df['Issue key'] = df['Issue summary'].str.extract('\[(.*?)\]', expand=False)
+    df = df.drop('Issue summary', axis=1)
+    return df
+
+
+
+
+def merge_data(Iterative, Eigen):
+    merged_df = pd.merge(Iterative, Eigen, on='Issue key', how='inner')
+    merged_df = merged_df.rename(columns={'Assignee_x': 'Assignee', 'Issue Type_x': 'Issue Type'})
+    merged_df = merged_df.drop('Issue Type_y', axis=1)
+    merged_df = merged_df[['Issue key', 'Work date', 'Assignee', 'Sprint', 'Status', 'Priority', 'Project name', 'Issue Type',
+                           'Creator', 'Created', 'Resolution', 'Story Points', 'Hours', 'Resolved', 'Epic', 'CoreTimeActivity', 
+                           'CoreTimeClient', 'CoreTimePhase', 'CoreTimeProject', 'Labels']]
+    
+
+    grouped_df = merged_df.groupby('Issue key').agg({'Hours': 'sum', 'Story Points': 'first', 'Assignee': 'first', 
+                                                     'Sprint': 'first', 'Resolution': 'first', 'Resolved': 'first', 
+                                                     'Created': 'first', 'Priority': 'first', 'Creator': 'first', 
+                                                     'CoreTimeActivity': 'first', 'CoreTimeClient': 'first', 
+                                                     'CoreTimePhase': 'first', 'Epic': 'first', 'CoreTimeProject': 'first', 
+                                                     'Project name': 'first', 'Status': 'first', 'Labels': 'first', 
+                                                     'Work date': 'first', 'Issue Type': 'first'}).reset_index()
+    
+    grouped_df['days'] = grouped_df['Hours'] / 8
+    grouped_df['Avg_Ratio'] = grouped_df['Story Points'] / grouped_df['days']
+    grouped_df['Work date'] = pd.to_datetime(grouped_df['Work date'])
+
+    return grouped_df
 
 
 def load_data(uploaded_file_iterative, uploaded_file_eigen):
     if uploaded_file_iterative is not None and uploaded_file_eigen is not None:
-        try: 
-            Iterative = pd.read_csv(uploaded_file_iterative, encoding='iso-8859-1')
-            Eigen = pd.read_csv(uploaded_file_eigen, encoding='iso-8859-1')
-
-            Iterative = Iterative[['Issue summary', 'Hours', 'Full name', 'Work date', 'CoreTime', 'Issue Type', 'Issue Status']]
-            Eigen = Eigen[['Summary', 'Issue key', 'Status', 'Resolved', 'Epic Link Summary', 'Labels', 'Priority', 'Issue Type', 'Assignee', 'Creator', 'Sprint', 'Created', 'Resolution', 'Custom field (Story Points)',
-                           'Custom field (CoreTimeActivity)', 'Custom field (CoreTimeClient)', 'Custom field (CoreTimePhase)', 'Custom field (CoreTimeProject)', 'Project name']]
-
-            Eigen = Eigen.rename(columns={'Custom field (CoreTimeActivity)': 'CoreTimeActivity', 'Custom field (CoreTimeClient)': 'CoreTimeClient',
-                                          'Custom field (CoreTimePhase)': 'CoreTimePhase', 'Custom field (CoreTimeProject)': 'CoreTimeProject', 'Epic Link Summary': 'Epic', 'Custom field (Story Points)': 'Story Points'})
-    
-            def extract_key_ID(df):
-                df['Issue key'] = df['Issue summary'].str.extract('\[(.*?)\]', expand=False)
-                df = df.drop('Issue summary', axis=1)
+        Iterative, Eigen = read_csv_files(uploaded_file_iterative, uploaded_file_eigen)
+        if Iterative is not None and Eigen is not None:
+            Iterative, Eigen = preprocess_data(Iterative, Eigen)
+            if Iterative is not None and Eigen is not None:
+                df = merge_data(Iterative, Eigen)
                 return df
-
-            Iterative = extract_key_ID(Iterative)
-            Iterative = Iterative.rename(columns={'Full name': 'Assignee'})
-
-            merged_df = pd.merge(Iterative, Eigen, on='Issue key')
-            merged_df = merged_df.rename(columns={'Assignee_x': 'Assignee', 'Issue Type_x': 'Issue Type'})
-            merged_df = merged_df.drop('Issue Type_y', axis=1)
-            merged_df = merged_df[['Issue key', 'Work date', 'Assignee', 'Sprint', 'Status', 'Priority', 'Project name', 'Issue Type', 'Creator', 'Created', 'Resolution',
-                                   'Story Points', 'Hours', 'Resolved','Epic', 'CoreTimeActivity', 'CoreTimeClient', 'CoreTimePhase', 'CoreTimeProject', 'Labels']]
-            grouped_df = merged_df.groupby('Issue key').agg({'Hours': 'sum', 'Story Points': 'first', 'Assignee': 'first', 'Sprint': 'first', 'Resolution': 'first', 'Resolved': 'first', 'Created': 'first', 'Priority': 'first',
-                                                             'Creator': 'first', 'CoreTimeActivity': 'first', 'CoreTimeClient': 'first', 'CoreTimePhase': 'first', 'Epic': 'first',
-                                                             'CoreTimeProject': 'first', 'Project name': 'first', 'Status': 'first', 'Labels': 'first', 'Work date': 'first', 'Issue Type' : 'first'}).reset_index()
-            df = grouped_df
-            df['days'] = df['Hours'] / 8
-            df['Avg_Ratio'] = df['Story Points'] / df['days']
-            df['Work date'] = pd.to_datetime(df['Work date'])
-
-            df.to_csv('df.csv', index=False)
-            return df
-
-        except Exception as e:
-            st.warning(f"Error processing the files: {e}")
+            else:
+                return None
+        else:
             return None
-
     else:
         st.warning("Please upload both CSV files to proceed!")
         return None
@@ -61,16 +107,19 @@ def load_data(uploaded_file_iterative, uploaded_file_eigen):
 #-------------------------------------------------------------------------------------------------------------------------------------#
 DEFAULT_RATES = {
     "Pawel G": 42.80,
-    "Marcin Ko": 42.80,
+    "Marcin Ko": 42.80,                                               
     "Marcin Kl": 26.75,
     "Lukasz": 31.03,
     "Alek D": 26.75,
     "Dawid N": 26.75
 }
-
-
+# Constants
+DEFAULT_BG_COLOR = 'rgba(0, 0, 0, 0)'
 
 def get_assignee_rates(df):
+    """
+    Get assignee rates from the DataFrame.
+    """
     assignee_rates = {}
     # Check for assignees with missing rates or assignees not in the dataframe and set them to default
     for assignee, default_rate in DEFAULT_RATES.items():
@@ -79,15 +128,41 @@ def get_assignee_rates(df):
 
     return assignee_rates
 
+
+
+
 def display_assignee_rates(assignee_rates):
+    """
+    Display the rates of assignees in the sidebar.
+    """
     for assignee, rate in assignee_rates.items():
         st.sidebar.write(f"Rate for Assignee {assignee}: {rate}")
 
-
-
-
-#--------------------------------------------------------------------------------------------------------------#
-
+def update_chart_layout(chart, title, height=None, width=None):
+    """
+    Update chart layout and styling.
+    """
+    chart.update_layout(
+        height=height,
+        width=width,
+        margin=dict(l=0, r=0, t=50, b=0),
+        plot_bgcolor=DEFAULT_BG_COLOR,
+        paper_bgcolor=DEFAULT_BG_COLOR,
+        shapes=[
+            dict(
+                type='rect',
+                xref='paper',
+                yref='paper',
+                x0=0,
+                y0=0,
+                x1=1,
+                y1=1,
+                line=dict(color='black', width=1),
+                fillcolor=DEFAULT_BG_COLOR
+            )
+        ],
+        title=title
+    )
 
 
 def create_combined_chart(df, sprint_summary, sprint_avg_ratio):
@@ -128,12 +203,14 @@ def create_combined_chart(df, sprint_summary, sprint_avg_ratio):
 
     return combined_chart
 
-#--------------------------------------------------------------------------------------------------------------#
-
-    
 def display_tab1(df, assignee_rates):
+    """
+    Display visualizations and data for Tab 1.
+    """
     df['Work date'] = pd.to_datetime(df['Work date'], infer_datetime_format=True)
     df['Cost'] = df['Hours'] * df['Assignee'].map(assignee_rates)
+
+
     epic_cost_data = df.groupby(['Epic', 'CoreTimeClient'])['Cost'].sum().reset_index()
     epic_sum_data = epic_cost_data.groupby('Epic')['Cost'].sum().reset_index()
     epic_hours_fig = px.bar(
@@ -206,7 +283,7 @@ def display_tab1(df, assignee_rates):
             )
         ]
     )
-
+    
     line_chart_story_points = px.line(
         df.groupby(['Work date', 'CoreTimeClient'])['Story Points'].sum().reset_index(),
         x='Work date',
@@ -225,7 +302,7 @@ def display_tab1(df, assignee_rates):
     )
 
 
-    # Outer container
+    # Outer container# Outer container
     outer_container = st.container()
     
     with outer_container:
@@ -237,14 +314,11 @@ def display_tab1(df, assignee_rates):
         
         col3.plotly_chart(treemap_fig, use_container_width=True)
         col3.plotly_chart(line_chart_story_points, use_container_width=True)
-    search_value = st.text_input("Search for value in table rows:", "", key="search_input_tab2")
+
+    search_value = st.text_input("Search for value in table rows:", "")
 
     # Filter the DataFrame based on the search input
-    if search_value:
-        filtered_df = df[df.apply(lambda row: search_value.lower() in str(row).lower(), axis=1)]
-    else:
-        filtered_df = df  # If no search input, show the original DataFrame
-
+    filtered_df = df[df.apply(lambda row: search_value.lower() in str(row).lower(), axis=1)] if search_value else df
     # Display the filtered DataFrame as a table
     st.dataframe(filtered_df)
 #-----------------------------------------------------------------------------------------------------------------------#
@@ -316,17 +390,23 @@ def display_tab2(df, assignee_rates):
     sprint_summary = df.groupby('Sprint').agg({'Story Points': 'sum', 'days': 'sum'}).reset_index()
 
 
-    #  Team Average Ratio by Sprint
-    sprint_avg_ratio = df.groupby('Sprint')['Avg_Ratio'].mean().reset_index()
+        # Calculate the total story points and total days for each sprint
+    sprint_totals = df.groupby('Sprint').agg({'Story Points': 'sum', 'days': 'sum'}).reset_index()
 
+    # Calculate the average ratio as story points divided by days for each sprint
+    sprint_totals['Avg_Ratio'] = sprint_totals['Story Points'] / sprint_totals['days']
+
+    # Then, use the sprint_totals DataFrame for plotting the Team Average Ratio by Sprint
     fig2 = go.Figure()
     fig2.add_trace(go.Scatter(
-        x=sprint_avg_ratio['Sprint'],
-        y=sprint_avg_ratio['Avg_Ratio'],
+        x=sprint_totals['Sprint'],
+        y=sprint_totals['Avg_Ratio'],
         mode='lines+markers',
         marker=dict(size=8),
         line=dict(width=2),
     ))
+
+
 
     # Update layout for the line chart
     fig2.update_layout(
@@ -336,6 +416,7 @@ def display_tab2(df, assignee_rates):
         height=500,
         margin=dict(l=100, r=100, t=100, b=100),
     )
+
 
     avg_ratio_assignee_phase = df.groupby(['Assignee', 'CoreTimePhase'])['Avg_Ratio'].mean().reset_index()
 
@@ -391,7 +472,7 @@ def display_tab2(df, assignee_rates):
     df_current_sprint = df[df['Sprint'].str.contains(str(current_sprint_number))]
 
         # Calculate assignee capacity
-    assignee_capacity = calculate_assignee_capacity(df_current_sprint, df_current_sprint['Avg_Ratio'])
+    assignee_capacity = assignee_median_capacity(df_current_sprint, df_current_sprint['Avg_Ratio'])
     df_current_sprint['Assignee Capacity'] = assignee_capacity
 
     # Calculate workload as sum of story points for the filtered data
@@ -438,7 +519,7 @@ def display_tab2(df, assignee_rates):
 
 
     with col2:
-        combined_chart = create_combined_chart(df, sprint_summary, sprint_avg_ratio)
+        combined_chart = create_combined_chart(df, sprint_summary, sprint_totals)
         st.plotly_chart(combined_chart, use_container_width=True)
         st.plotly_chart(cfd_chart, use_container_width=True)
 
@@ -537,10 +618,121 @@ def display_tab3(df, assignee_rates):
     st.dataframe(filtered_df)        
 
 
-#--------------------------------------------------------------------------------------------#
-
 
 #-------------------------------------------------------------------------------------------------------------------------------------#
+def get_last_sprint_number(df):
+    # Ensure that all sprint values are strings and then extract the numbers
+    sprint_numbers = [int(re.search(r'\d+', str(sprint)).group()) for sprint in df['Sprint'] if re.search(r'\d+', str(sprint))]
+
+    if not sprint_numbers:  # Check if the list is empty
+        st.warning("No valid sprint numbers found in the dataset.")
+        return None
+
+    return max(sprint_numbers)
+
+#-------------------------------------------------------------------------------------------------------------------------------------#
+
+def assignee_median_capacity(df, assignee):
+    # Filter the dataframe for the specific assignee
+    assignee_data = df[df['Assignee'] == assignee]
+
+    # Group by sprint and sum the story points for each sprint
+    total_story_points_per_sprint = assignee_data.groupby('Sprint')['Story Points'].sum()
+
+    # Return the median of the summed story points across sprints
+    return total_story_points_per_sprint.median()
+
+
+
+def display_tab4(df, assignee_rates):
+
+    # Create a radar chart for average ratio by assignee and core time phase
+    avg_ratio_assignee_phase = df.groupby(['Assignee', 'CoreTimePhase'])['Avg_Ratio'].mean().reset_index()
+    radar_chart_assignee_phase = px.line_polar(avg_ratio_assignee_phase, r='Avg_Ratio', theta='CoreTimePhase',
+                                               line_close=True,
+                                               title='Average Ratio by Assignee and Core Time Phase',
+                                               labels={'Avg_Ratio': 'Average Ratio', 'CoreTimePhase': 'Core Time Phase'},
+                                               color='Assignee')
+
+
+
+    # Create a new column 'Assignee Capacity' to store the median story points per sprint for each assignee
+    df['Assignee Capacity'] = df['Assignee'].apply(lambda x: assignee_median_capacity(df, x))
+
+    assignee_capacity_fig = px.box(
+        df,
+        x='Assignee',
+        y='Assignee Capacity',
+        title='Assignee Capacity in Sprint'
+    )
+
+    # Add data labels to the box plot for individual data points only
+    assignee_capacity_fig.update_traces(
+        boxpoints='all',  # Display all the points
+        jitter=0.3,
+        pointpos=-1.8,
+        hovertemplate='Capacity: %{y}<br><extra></extra>'
+    )
+
+    # Set the maximum value of the Y-axis
+    assignee_capacity_fig.update_yaxes(range=[0, df['Assignee Capacity'].max() + 10])
+
+
+    # Create average ratio bar chart
+    avg_ratio_data = df.groupby(['Issue Type', 'Assignee'])['Avg_Ratio'].mean().reset_index()
+    avg_ratio_data.loc[avg_ratio_data['Issue Type'].isin(['Task', 'Sub-task']), 'Issue Type'] = 'Task & Sub-task'
+    filtered_avg_ratio_data = avg_ratio_data[avg_ratio_data['Issue Type'].isin(['Task & Sub-task', 'Bug'])]
+    color_map = {'Bug': 'darkred', 'Task & Sub-task': 'blue'}
+    avg_ratio_chart = px.bar(
+        filtered_avg_ratio_data,
+        x='Assignee',
+        y='Avg_Ratio',
+        color='Issue Type',
+        barmode='group',
+        color_discrete_map=color_map,
+        title='Average Ratio by Issue Type and Assignee'
+    )
+
+    avg_ratio_chart.update_traces(texttemplate='%{value:.2f}', textposition='inside')
+
+    # Line chart of Average Ratio by Sprint and Assignee
+    line_chart_avg_ratio = px.line(
+        df.groupby(['Sprint', 'Assignee'])['Avg_Ratio'].mean().reset_index(),
+        x='Sprint',
+        y='Avg_Ratio',
+        color='Assignee',
+        title='Average Ratio by Sprint and Assignee'
+    )
+
+    # Outer container
+    outer_container = st.container()
+
+    # Container 2: Charts
+    with outer_container:
+        container2 = st.container()
+        col2, col3 = container2.columns(2)
+
+        # Column 2
+        col2.plotly_chart(avg_ratio_chart, use_container_width=True)
+        col2.plotly_chart(radar_chart_assignee_phase, use_container_width=True)
+
+        # Column 3
+        col3.plotly_chart(assignee_capacity_fig, use_container_width=True)
+        col3.plotly_chart(line_chart_avg_ratio, use_container_width=True)
+
+    # Search input for the table
+    search_value = st.text_input("Search for value in table rows:", "", key="search_input_tab4")
+
+    # Filter the DataFrame based on the search input
+    if search_value:
+        filtered_df = df[df.apply(lambda row: search_value.lower() in str(row).lower(), axis=1)]
+    else:
+        filtered_df = df
+
+    # Display the filtered DataFrame as a table
+    st.dataframe(filtered_df)
+
+#----------------------------------------------------------------------------------------#
 def calculate_assignee_capacity(df, avg_ratio, sprint_duration_weeks=3, planning_days=1, working_days_per_week=5):
     # Calculate the number of development days
     dev_days = (sprint_duration_weeks * working_days_per_week) - planning_days
@@ -555,151 +747,6 @@ def calculate_assignee_capacity(df, avg_ratio, sprint_duration_weeks=3, planning
     assignee_capacity = avg_ratio * dev_days
 
     return assignee_capacity
-
-#-------------------------------------------------------------------------------------------------------------------------------------#
-def get_last_sprint_number(df):
-    # Find the last sprint number using regular expression
-    sprint_numbers = [int(re.search(r'\d+', sprint).group()) for sprint in df['Sprint'] if re.search(r'\d+', sprint)]
-    last_sprint_number = max(sprint_numbers)
-    return last_sprint_number
-
-#-------------------------------------------------------------------------------------------------------------------------------------#
-
-
-def display_tab4(df, assignee_rates):
-    # Create a radar chart for average ratio by assignee and core time phase
-    avg_ratio_assignee_phase = df.groupby(['Assignee', 'CoreTimePhase'])['Avg_Ratio'].mean().reset_index()
-    radar_chart_assignee_phase = px.line_polar(avg_ratio_assignee_phase, r='Avg_Ratio', theta='CoreTimePhase',
-                                               line_close=True,
-                                               title='Average Ratio by Assignee and Core Time Phase',
-                                               labels={'Avg_Ratio': 'Average Ratio', 'CoreTimePhase': 'Core Time Phase'},
-                                               color='Assignee')
-
-    hours_booked_coretimephase_assignee_sprint = df.groupby(['Sprint', 'CoreTimeClient', 'CoreTimeProject', 'CoreTimePhase', 'CoreTimeActivity'])['Hours'].sum().reset_index()
-    hours_booked_coretimephase_assignee_sprint_fig = px.treemap(
-        hours_booked_coretimephase_assignee_sprint,
-        path=['Sprint', 'CoreTimeClient', 'CoreTimeProject', 'CoreTimePhase', 'CoreTimeActivity'],
-        values='Hours',
-        title='CoreTime Hours by Sprint'
-    )
-    hours_booked_coretimephase_assignee_sprint_fig.update_layout(
-        height=600,
-        width=600,
-        margin=dict(l=0, r=0, t=50, b=0),
-        plot_bgcolor='rgba(0, 0, 0, 0)',
-        paper_bgcolor='rgba(0, 0, 0, 0)',
-        shapes=[
-            dict(
-                type='rect',
-                xref='paper',
-                yref='paper',
-                x0=0,
-                y0=0,
-                x1=1,
-                y1=1,
-                line=dict(color='black', width=1),
-                fillcolor='rgba(0, 0, 0, 0)'
-            )
-        ]
-    )
-
-
-    
-    # Calculate assignee capacity
-    assignee_capacity = calculate_assignee_capacity(df, df['Avg_Ratio'])
-    df['Assignee Capacity'] = assignee_capacity
-
-    assignee_capacity_fig = px.box(
-        df,
-        x='Assignee',
-        y='Assignee Capacity',
-        title='Assignee Capacity in Sprint'
-    )
-
-    # Add data labels to the box plot
-    assignee_capacity_fig.update_traces(
-        boxpoints='all',
-        jitter=0.3,
-        pointpos=-1.8,
-        hovertemplate='Capacity: %{y}<br><extra></extra>'
-    )
-    # Set the maximum value of the Y-axis to 100
-    assignee_capacity_fig.update_yaxes(range=[0, 100])
-    
-    
-    # Calculate average ratio by issue type and assignee
-    avg_ratio_data = df.groupby(['Issue Type', 'Assignee'])['Avg_Ratio'].mean().reset_index()
-    
-    
-    # Sum 'Task' and 'Sub-task' values and update the 'Issue Type' accordingly
-    avg_ratio_data.loc[avg_ratio_data['Issue Type'].isin(['Task', 'Sub-task']), 'Issue Type'] = 'Task & Sub-task'
-    
-    # Filter the data for only Task & Sub-task and Bug issue types
-    filtered_avg_ratio_data = avg_ratio_data[avg_ratio_data['Issue Type'].isin(['Task & Sub-task', 'Bug'])]
-    
-    # Define custom colors for the chart
-    color_map = {'Bug': 'darkred', 'Task & Sub-task': 'blue'}
-    
-    # Create the chart with custom colors
-    avg_ratio_chart = px.bar(
-        filtered_avg_ratio_data,
-        x='Assignee',
-        y='Avg_Ratio',
-        color='Issue Type',
-        barmode='group',  # Set the barmode to 'group' for side-by-side bars
-        color_discrete_map=color_map,  # Apply the custom colors
-        title='Average Ratio by Issue Type and Assignee',
-        labels={'Issue Type': 'Issue Type', 'Avg_Ratio': 'Average Ratio', 'Assignee': 'Assignee'}
-    )
-
-    avg_ratio_chart.update_traces(texttemplate='%{value:.2f}', textposition='inside')
-
-
-    # Add new chart: Line chart of Average Ratio by Sprint and Assignee
-    line_chart_avg_ratio = px.line(
-        df.groupby(['Sprint', 'Assignee'])['Avg_Ratio'].mean().reset_index(),
-        x='Sprint',
-        y='Avg_Ratio',
-        color='Assignee',
-        labels={'Sprint': 'Sprint', 'Avg_Ratio': 'Average Ratio', 'Assignee': 'Assignee'},
-        title='Average Ratio by Sprint and Assignee'
-    )
-
-
-
-    # Outer container
-    outer_container = st.container()
-    
-    # Container 2: Charts
-    with outer_container:
-        container2 = st.container()
-        col2, col3 = container2.columns(2)
-    
-        # Column 2
-        col2.plotly_chart(avg_ratio_chart, use_container_width=True)
-        col2.plotly_chart(radar_chart_assignee_phase, use_container_width=True)
-    
-        # Column 3
-        col3.plotly_chart(assignee_capacity_fig, use_container_width=True)
-        col3.plotly_chart(line_chart_avg_ratio, use_container_width=True)
-    
-    # Add a search input for the table
-    search_value = st.text_input("Search for value in table rows:", "", key="search_input_tab2")
-
-    # Filter the DataFrame based on the search input
-    if search_value:
-        filtered_df = df[df.apply(lambda row: search_value.lower() in str(row).lower(), axis=1)]
-    else:
-        filtered_df = df  # If no search input, show the original DataFrame
-
-    # Display the filtered DataFrame as a table
-    st.dataframe(filtered_df)
-
-#----------------------------------------------------------------------------------------#
-
-#----------------------------------------------------------------------------------------#
-
-
 
 
 def display_tab5(df, assignee_rates):
@@ -759,7 +806,6 @@ def display_tab5(df, assignee_rates):
 
     df_current_sprint_filtered['Resolution Time'] = (df_current_sprint_filtered['Resolved'] - df_current_sprint_filtered['Created']).dt.days
 
-    # ... Rest of your code ...
 
     # Aggregate the resolution time by assignee (use the filtered data)
     resolution_by_assignee = df_current_sprint_filtered.groupby('Assignee')['Resolution Time'].sum().reset_index()
@@ -859,6 +905,7 @@ def display_tab5(df, assignee_rates):
 
     # Display the filtered DataFrame as a table
     st.dataframe(filtered_df)
+
 
 
 
