@@ -52,29 +52,49 @@ def get_sprint(date, sprint_bins):
     return None
 
 
+
+def extract_key_ID(df):
+    df = df.copy()  # Make a copy to work with
+    
+    # Extracting the pattern after F# inside []
+    df['Issue key'] = df['Issue summary'].str.extract('\[F#(\d+)\]', expand=False)
+    
+    # For rows where 'Issue key' is NaN, extracting the pattern inside []
+    mask = df['Issue key'].isna()
+    df.loc[mask, 'Issue key'] = df.loc[mask, 'Issue summary'].str.extract('\[(.*?)\]', expand=False)
+    
+    df = df.drop('Issue summary', axis=1)
+    return df
+
+
+
+
 def preprocess_data(Iterative, Eigen):
-    if 'Issue summary' in Iterative:
+    # For Iterative dataframe
+    if 'Issue summary' in Iterative.columns:
         Iterative = Iterative[['Issue summary', 'Hours', 'Full name', 'Work date', 'CoreTime', 'Issue Type', 'Issue Status']]
         Iterative = extract_key_ID(Iterative)
         Iterative = Iterative.rename(columns={'Full name': 'Assignee'})
     else:
         st.warning("Issue summary not found in Iterative file.")
         return None, None
-    
 
+    # For Eigen dataframe
     eigen_columns = ['Summary', 'Issue key', 'Status', 'Resolved', 'Epic Link Summary', 'Labels', 'Priority', 'Issue Type', 
-                     'Assignee', 'Creator', 'Sprint', 'Created', 'Resolution', 'Custom field (Story Points)',
-                     'Custom field (CoreTimeActivity)', 'Custom field (CoreTimeClient)', 'Custom field (CoreTimePhase)', 
-                     'Custom field (CoreTimeProject)', 'Project name']
-    
+                    'Assignee', 'Creator', 'Sprint', 'Created', 'Resolution', 'Custom field (Story Points)',
+                    'Custom field (CoreTimeActivity)', 'Custom field (CoreTimeClient)', 'Custom field (CoreTimePhase)', 
+                    'Custom field (CoreTimeProject)', 'Project name']
+
     if all(col in Eigen for col in eigen_columns):
         Eigen = Eigen[eigen_columns]
-        Eigen = Eigen.rename(columns={'Custom field (CoreTimeActivity)': 'CoreTimeActivity', 
-                                      'Custom field (CoreTimeClient)': 'CoreTimeClient',
-                                      'Custom field (CoreTimePhase)': 'CoreTimePhase', 
-                                      'Custom field (CoreTimeProject)': 'CoreTimeProject', 
-                                      'Epic Link Summary': 'Epic', 
-                                      'Custom field (Story Points)': 'Story Points'})
+        Eigen = Eigen.rename(columns={
+            'Custom field (CoreTimeActivity)': 'CoreTimeActivity', 
+            'Custom field (CoreTimeClient)': 'CoreTimeClient',
+            'Custom field (CoreTimePhase)': 'CoreTimePhase', 
+            'Custom field (CoreTimeProject)': 'CoreTimeProject', 
+            'Epic Link Summary': 'Epic', 
+            'Custom field (Story Points)': 'Story Points'
+        })
     else:
         st.warning("Some necessary columns are missing in Eigen file.")
         return None, None
@@ -82,17 +102,14 @@ def preprocess_data(Iterative, Eigen):
     return Iterative, Eigen
 
 
-def extract_key_ID(df):
-    df['Issue key'] = df['Issue summary'].str.extract('\[(.*?)\]', expand=False)
-    df = df.drop('Issue summary', axis=1)
-    return df
+
 
 
 
 
 def merge_data(Iterative, Eigen, sprint_bins):
 
-    merged_df = pd.merge(Iterative, Eigen, on='Issue key', how='inner')
+    merged_df = pd.merge(Iterative, Eigen, on='Issue key', how='left')  # Using 'left' merge here
     merged_df = merged_df.rename(columns={'Assignee_x': 'Assignee', 'Issue Type_x': 'Issue Type'})
     merged_df = merged_df.drop('Issue Type_y', axis=1)
     merged_df = merged_df[['Issue key', 'Work date', 'Assignee', 'Sprint', 'Status', 'Priority', 'Project name', 'Issue Type',
