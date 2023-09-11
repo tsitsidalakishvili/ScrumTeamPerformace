@@ -1,1 +1,1 @@
-[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://[scrumteamperformace.streamlit.app](https://scrumteamperformace.streamlit.app/)https://scrumteamperformace.streamlit.app/)
+[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://scrumteamperformace.streamlit.app/)
