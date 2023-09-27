@@ -995,7 +995,7 @@ def display_tab5(df, assignee_rates, sprint_bins):
 def Similarity_Analysis(df):
     st.header("Similarity Analysis")
     
-    uploaded_file = st.file_uploader("Upload CSV File(Csv must include columns: Summary & Description)", type=['csv'])
+    uploaded_file = st.file_uploader("Upload CSV File(Jira)", type=['csv'])
     if uploaded_file:
         df = pd.read_csv(uploaded_file, encoding='iso-8859-1')
         st.session_state['data_frame'] = df
