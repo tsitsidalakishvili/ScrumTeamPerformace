@@ -994,7 +994,21 @@ def display_tab5(df, assignee_rates, sprint_bins):
 
 def Similarity_Analysis(df):
     st.header("Similarity Analysis")
-    
+
+    # Create expander for Information Box
+    with st.expander("How it works", expanded=True):
+        st.markdown("""
+        The script is designed to process and analyze text data, identifying and quantifying similarities between different pieces of text.
+
+        **Text Preprocessing**:
+        - The script begins by accessing a list of common words (stopwords) like "the", "and", and "in", which are usually removed as they don’t contribute significantly to meaning.
+        - Each text entry is cleaned by removing stopwords, email addresses, URLs, and HTML tags, resulting in a concise and meaningful version of the original text. This cleaned text is then stored for further analysis.
+
+        **Similarity Calculation**:
+        - *TF-IDF Vectorization*: The cleaned text is converted into numerical format using TF-IDF Vectorization, a technique that helps the computer understand the importance of each word relative to the dataset.
+        - *Calculating & Filtering Similarities*: The script calculates the similarity between each piece of text and filters out pairs that have a similarity score above a set threshold. The result is a list of text pairs deemed sufficiently similar, accompanied by their similarity scores and relevant information from the original data.
+        """)
+
     uploaded_file = st.file_uploader("Upload CSV File(Jira)", type=['csv'])
     if uploaded_file:
         df = pd.read_csv(uploaded_file, encoding='iso-8859-1')
@@ -1005,10 +1019,6 @@ def Similarity_Analysis(df):
         # Call your similarity function here with df as argument
         # Make sure to replace similarity_func with your actual function
         similarity_func(df)
-
-
-
-
 
 
 
