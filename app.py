@@ -17,7 +17,7 @@ import plotly.graph_objects as go
 #import streamlit_pandas_profiling
 #from streamlit_pandas_profiling import st_profile_report
 #import neo4j
-from neo4j_integration import Neo4jManager
+#from neo4j_integration import Neo4jManager
 import io  
 import csv
 
