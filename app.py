@@ -12,11 +12,11 @@ from sklearn.metrics.pairwise import cosine_similarity
 from similarity import preprocess_data, calculate_similarity
 import requests
 import subprocess
-from neo4j import GraphDatabase, basic_auth
+#from neo4j import GraphDatabase, basic_auth
 import plotly.graph_objects as go
 #import streamlit_pandas_profiling
 #from streamlit_pandas_profiling import st_profile_report
-import neo4j
+#import neo4j
 from neo4j_integration import Neo4jManager
 import io  
 import csv
