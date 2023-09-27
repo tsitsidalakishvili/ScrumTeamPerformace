@@ -108,7 +108,7 @@ def preprocess_data(Iterative, Eigen):
 
 
 def merge_data(Iterative, Eigen, sprint_bins):
-
+    merged_df = pd.merge(Iterative, Eigen, on='Issue key', how='outer')  # Changed 'left' to 'outer' here
     merged_df = pd.merge(Iterative, Eigen, on='Issue key', how='left')  # Using 'left' merge here
     merged_df = merged_df.rename(columns={'Assignee_x': 'Assignee', 'Issue Type_x': 'Issue Type'})
     merged_df = merged_df.drop('Issue Type_y', axis=1)
@@ -1092,6 +1092,7 @@ def run_app():
         # Get the last sprint number
         last_sprint_number = get_last_sprint_number(df)
         st.title(f"Dev Sprint 80 - {last_sprint_number}")
+        st.subheader("The charts do not account for time and effort spent on planning; they only reflect development work.")
 
         # Collapsible section for assignee rates
         with st.expander("Assignee Rates"):
