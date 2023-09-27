@@ -1,18 +1,31 @@
 import streamlit as st
 import pandas as pd
-import datetime
-import streamlit as st
-import pandas as pd
+import pandas_profiling  
 import plotly.express as px
-import plotly.graph_objects as go
-import matplotlib.pyplot as plt
-from wordcloud import WordCloud
-from io import BytesIO
-import re
-import datetime
 import numpy as np
-import datetime
-import pandas as pd
+from jira import JIRA
+import nltk
+from nltk.corpus import stopwords
+import re
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+from similarity import preprocess_data, calculate_similarity
+import requests
+import subprocess
+from neo4j import GraphDatabase, basic_auth
+import plotly.graph_objects as go
+import streamlit_pandas_profiling
+from streamlit_pandas_profiling import st_profile_report
+import neo4j
+from neo4j_integration import Neo4jManager
+import io  
+import csv
+
+
+# Download stopwords if not already downloaded
+nltk.download('stopwords')
+
+
 
 def read_csv_files(uploaded_file_iterative, uploaded_file_eigen):
     try:
@@ -67,9 +80,24 @@ def extract_key_ID(df):
     return df
 
 
+def similarity_func(df):
+   
+    threshold = st.slider("Similarity Threshold", 0.0, 1.0, 0.2, 0.05)
+    
+    if st.checkbox("Update Similarity Based on Threshold"):
+        # Process the passed dataframe directly, do not read from CSV again
+        df = preprocess_data(df)
+        similar_pairs = calculate_similarity(df, threshold)
+        
+        # Diagnostic outputs
+        st.write(f"Number of rows in the original data: {len(df)}")
+        st.write(f"Number of similar pairs found: {len(similar_pairs)}")
+        
+        st.subheader(f"Similarity Threshold: {threshold}")
+        st.dataframe(similar_pairs)
 
 
-def preprocess_data(Iterative, Eigen):
+def preprocess___data(Iterative, Eigen):
     # For Iterative dataframe
     if 'Issue summary' in Iterative.columns:
         Iterative = Iterative[['Issue summary', 'Hours', 'Full name', 'Work date', 'CoreTime', 'Issue Type', 'Issue Status']]
@@ -137,7 +165,7 @@ def load_data(uploaded_file_iterative, uploaded_file_eigen, sprint_bins):
     if uploaded_file_iterative is not None and uploaded_file_eigen is not None:
         Iterative, Eigen = read_csv_files(uploaded_file_iterative, uploaded_file_eigen)
         if Iterative is not None and Eigen is not None:
-            Iterative, Eigen = preprocess_data(Iterative, Eigen)
+            Iterative, Eigen = preprocess___data(Iterative, Eigen)
             if Iterative is not None and Eigen is not None:
                 df = merge_data(Iterative, Eigen, sprint_bins)
                 return df
@@ -247,6 +275,7 @@ def create_combined_chart(df, sprint_summary, sprint_avg_ratio):
             trace.textfont.size = 14
 
     return combined_chart
+
 
 def display_tab1(df, assignee_rates):
     """
@@ -963,92 +992,25 @@ def display_tab5(df, assignee_rates, sprint_bins):
 
 
 
-def display_Ad_Hoc_Analysis(df, assignee_rates):
-    df['Work date'] = pd.to_datetime(df['Work date'], infer_datetime_format=True)
-    # Assignee rates are already passed as an argument, no need to call get_assignee_rates again here
-    df['Cost'] = df['Hours'] * df['Assignee'].map(assignee_rates)
+def Similarity_Analysis(df):
+    st.header("Similarity Analysis")
+    
+    uploaded_file = st.file_uploader("Upload CSV File", type=['csv'])
+    if uploaded_file:
+        df = pd.read_csv(uploaded_file, encoding='iso-8859-1')
+        st.session_state['data_frame'] = df
+        st.write(df)
+        st.success("Data successfully uploaded!")
 
-    treemap_data = df.groupby(['CoreTimeClient', 'CoreTimeProject', 'CoreTimePhase', 'CoreTimeActivity', pd.Grouper(key='Work date', freq='M')])['Cost'].sum().reset_index()
+        # Call your similarity function here with df as argument
+        # Make sure to replace similarity_func with your actual function
+        similarity_func(df)
 
-    treemap_fig = px.treemap(
-        treemap_data,
-        path=['Work date', 'CoreTimeClient', 'CoreTimeProject', 'CoreTimePhase', 'CoreTimeActivity'],
-        values='Cost',
-        title='Cost by CoreTimeClient, Project, Phase, Activity, and Month'
-    )
 
-    treemap_fig.update_layout(
-        height=600,
-        width=1000,
-        margin=dict(l=0, r=0, t=50, b=0),
-        plot_bgcolor='rgba(0, 0, 0, 0)',
-        paper_bgcolor='rgba(0, 0, 0, 0)',
-        shapes=[
-            dict(
-                type='rect',
-                xref='paper',
-                yref='paper',
-                x0=0,
-                y0=0,
-                x1=1,
-                y1=1,
-                line=dict(color='black', width=1),
-                fillcolor='rgba(0, 0, 0, 0)'
-            )
-        ]
-    )
 
-    # Add new chart: Line chart of Delivered Story Points by Sprint and Assignee
-    line_chart_delivered_sp = px.line(
-        df.groupby(['Sprint', 'Assignee'])['Story Points'].sum().reset_index(),
-        x='Sprint',
-        y='Story Points',
-        color='Assignee',
-        labels={'Sprint': 'Sprint', 'Story Points': 'Delivered Story Points', 'Assignee': 'Assignee'},
-        title='Delivered Story Points by Sprint and Assignee'
-    )
 
-    # Add new chart: Line chart of Average Ratio by Sprint and Assignee
-    line_chart_avg_ratio = px.line(
-        df.groupby(['Sprint', 'Assignee'])['Avg_Ratio'].mean().reset_index(),
-        x='Sprint',
-        y='Avg_Ratio',
-        color='Assignee',
-        labels={'Sprint': 'Sprint', 'Avg_Ratio': 'Average Ratio', 'Assignee': 'Assignee'},
-        title='Average Ratio by Sprint and Assignee'
-    )
 
-    # Add new chart: Line chart of Time Booked by Sprint and Assignee
-    line_chart_time_booked = px.line(
-        df.groupby(['Sprint', 'Assignee'])['Hours'].sum().reset_index(),
-        x='Sprint',
-        y='Hours',
-        color='Assignee',
-        labels={'Sprint': 'Sprint', 'Hours': 'Time Booked', 'Assignee': 'Assignee'},
-        title='Time Booked by Sprint and Assignee'
-    )
 
-    # Add new chart: Line chart of Delivered Story Points vs Booked Hours by Sprint for Aleksander 
-    aleksander_data = df[df['Assignee'] == 'Aleksander ']
-    line_chart_delivered_vs_hours = px.line(
-        aleksander_data.groupby('Sprint')[['Story Points', 'Hours']].sum().reset_index(),
-        x='Sprint',
-        y=['Story Points', 'Hours'],
-        labels={'Sprint': 'Sprint', 'value': 'Value', 'variable': 'Metric'},
-        title='Delivered Story Points vs Booked Hours by Sprint (Aleksander )'
-    )
-
-    # Add new chart: Line chart of Delivered Story Points and Average Ratio by Sprint for Aleksander 
-    line_chart_delivered_and_ratio = px.line(
-        aleksander_data.groupby('Sprint').agg({'Story Points': 'sum', 'Avg_Ratio': 'mean'}).reset_index(),
-        x='Sprint',
-        y=['Story Points', 'Avg_Ratio'],
-        labels={'Sprint': 'Sprint', 'value': 'Value', 'variable': 'Metric'},
-        title='Delivered Story Points and Average Ratio by Sprint (Aleksander )'
-    )
-
-    #st.plotly_chart(line_chart_delivered_sp, line_chart_avg_ratio, line_chart_time_booked, line_chart_delivered_vs_hours, line_chart_delivered_and_ratio, treemap_fig)
-    #st.plotly_chart(line_chart_time_booked, line_chart_delivered_vs_hours, line_chart_delivered_and_ratio, treemap_fig)
 
 DEFAULT_RATES = {
     "Pawel G": 42.80,
@@ -1064,44 +1026,45 @@ DEFAULT_RATES = {
 def run_app():
     st.set_page_config(layout='wide')
 
-    # Tabs at the top of the sidebar
     tabs = {
         #"Current Sprint": display_tab5,
         "Team Performance": display_tab2,
         "Individual Performance": display_tab4,
         "Costs": display_tab1,
         "Productivity & Workload": display_tab3,
-        "Ad Hoc Analysis": display_Ad_Hoc_Analysis
+        "Similarity Analysis": Similarity_Analysis
     }
     
     selected_tab = st.sidebar.radio("Select a Tab", list(tabs.keys()))
     if 'selected_tab' not in st.session_state or st.session_state.selected_tab != selected_tab:
-        st.session_state.selected_tab = selected_tab  # Store the selected tab in session state
+        st.session_state.selected_tab = selected_tab
 
-    # Place the file uploaders at the bottom of the sidebar
-    with st.sidebar.expander("Upload Files"):
-        uploaded_file_iterative = st.file_uploader("Choose Iterative CSV file", type="csv")
-        uploaded_file_eigen = st.file_uploader("Choose Eigen CSV file", type="csv")
-
-    # If both files are uploaded, process them
-    df = None
-    if uploaded_file_iterative and uploaded_file_eigen:
-        df = load_data(uploaded_file_iterative, uploaded_file_eigen, sprint_bins)
-
-    if df is not None:
-        # Get the last sprint number
-        last_sprint_number = get_last_sprint_number(df)
-        st.title(f"Dev Sprint 80 - {last_sprint_number}")
-
-        # Collapsible section for assignee rates
-        with st.expander("Assignee Rates"):
-            assignee_rates = get_assignee_rates(df)  # Retrieve assignee rates
-
-        # Call the appropriate function for the selected tab
-        selected_function = tabs[selected_tab]
-        selected_function(df, assignee_rates)  # Pass assignee_rates as a parameter
+    if selected_tab == "Similarity Analysis":
+        tabs[selected_tab](None)  # Directly call Similarity_Analysis without waiting for file uploads
     else:
-        st.warning("Upload files.")
+        # Only display file uploaders for other tabs, not for Similarity Analysis
+        with st.sidebar.expander("Upload Files"):
+            uploaded_file_iterative = st.file_uploader("Choose Iterative CSV file", type="csv")
+            uploaded_file_eigen = st.file_uploader("Choose Eigen CSV file", type="csv")
+
+        # If both files are uploaded, process them for other tabs
+        df = None
+        if uploaded_file_iterative and uploaded_file_eigen:
+            df = load_data(uploaded_file_iterative, uploaded_file_eigen, sprint_bins)
+
+        if df is not None:
+            last_sprint_number = get_last_sprint_number(df)
+            st.title(f"Dev Sprint 80 - {last_sprint_number}")
+            st.subheader("The charts do not account for time and effort spent on planning; they only reflect development work.")
+
+            with st.expander("Assignee Rates"):
+                assignee_rates = get_assignee_rates(df)
+
+            # Call the appropriate function for the selected tab
+            selected_function = tabs[selected_tab]
+            selected_function(df, assignee_rates)
+        else:
+            st.warning("Upload files for the selected tab.")
 
 if __name__ == "__main__":
     run_app()
