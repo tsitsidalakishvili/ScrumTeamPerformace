@@ -6,6 +6,7 @@ import numpy as np
 from jira import JIRA
 import nltk
 from wordcloud import WordCloud
+import matplotlib.pyplot as plt
 
 from nltk.corpus import stopwords
 import re
