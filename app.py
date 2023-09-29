@@ -7,6 +7,7 @@ from jira import JIRA
 import nltk
 from wordcloud import WordCloud
 import matplotlib.pyplot as plt
+from io import BytesIO
 
 from nltk.corpus import stopwords
 import re
