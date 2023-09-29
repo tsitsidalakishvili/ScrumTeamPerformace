@@ -22,7 +22,7 @@ import plotly.graph_objects as go
 #from neo4j_integration import Neo4jManager
 import io  
 import csv
-import plotly as plt
+import plotly.express as px
 import csv
 from wordcloud import WordCloud 
 
