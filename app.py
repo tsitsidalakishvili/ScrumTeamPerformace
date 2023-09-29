@@ -20,7 +20,7 @@ import plotly.graph_objects as go
 #from neo4j_integration import Neo4jManager
 import io  
 import csv
-import WordCloud
+
 
 # Download stopwords if not already downloaded
 nltk.download('stopwords')
