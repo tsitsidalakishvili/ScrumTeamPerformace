@@ -22,6 +22,9 @@ import plotly.graph_objects as go
 #from neo4j_integration import Neo4jManager
 import io  
 import csv
+import plotly as plt
+import csv
+from wordcloud import WordCloud 
 
 
 # Download stopwords if not already downloaded
