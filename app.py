@@ -80,21 +80,42 @@ def extract_key_ID(df):
     return df
 
 
+
 def similarity_func(df):
-   
-    threshold = st.slider("Similarity Threshold", 0.0, 1.0, 0.2, 0.05)
-    
-    if st.checkbox("Update Similarity Based on Threshold"):
-        # Process the passed dataframe directly, do not read from CSV again
-        df = preprocess_data(df)
-        similar_pairs = calculate_similarity(df, threshold)
-        
-        # Diagnostic outputs
-        st.write(f"Number of rows in the original data: {len(df)}")
-        st.write(f"Number of similar pairs found: {len(similar_pairs)}")
-        
-        st.subheader(f"Similarity Threshold: {threshold}")
-        st.dataframe(similar_pairs)
+    with st.expander("Similarity Functionality"):
+        st.subheader("Similarity Results")
+
+        # Use session state to retrieve columns, remove the 'Save Columns' button
+        text_column = st.session_state.get('text_column', df.columns[0])
+        identifier_column = st.session_state.get('identifier_column', df.columns[0])
+        additional_columns = st.session_state.get('additional_columns', df.columns[0])
+
+        threshold = st.slider("Similarity Threshold", 0.0, 1.0, 0.2, 0.05)
+
+        if st.button('Start Similarity Analysis'):
+            # Check if columns exist
+            if set([st.session_state.text_column, st.session_state.identifier_column] + st.session_state.additional_columns).issubset(set(df.columns)):
+                try:
+                    # Ensure text_column is of string type
+                    df[st.session_state.text_column] = df[st.session_state.text_column].astype(str)
+                    
+                    # Preprocess and calculate similarity
+                    preprocessed_data = preprocess_data(df, st.session_state.text_column)
+                    similar_pairs = calculate_similarity(df, threshold, st.session_state.identifier_column, st.session_state.text_column, st.session_state.additional_columns)
+
+                    # Diagnostic outputs
+                    st.write(f"Number of rows in the original data: {len(preprocessed_data)}")
+                    st.write(f"Number of similar pairs found: {len(similar_pairs)}")
+
+                    # Display similarity results
+                    st.subheader(f"Similarity Threshold: {threshold}")
+                    st.dataframe(similar_pairs)
+                except Exception as e:
+                    st.error(f"Error running similarity analysis. Error: {str(e)}")
+            else:
+                st.error("Selected columns are not present in the data. Please check the column names and try again.")
+
+
 
 
 def preprocess___data(Iterative, Eigen):
@@ -992,22 +1013,35 @@ def display_tab5(df, assignee_rates, sprint_bins):
 
 
 
+
 def Similarity_Analysis(df):
     st.header("Similarity Analysis")
 
-    uploaded_file = st.file_uploader("Upload CSV File(Jira)", type=['csv'])
+    uploaded_file = st.file_uploader("Upload CSV File", type=['csv'])
     if uploaded_file:
         df = pd.read_csv(uploaded_file, encoding='iso-8859-1')
-        st.session_state['data_frame'] = df
+        st.session_state['data_frame'] = df  # This line is similar to the one in the "Connect to Jira" section
         st.write(df)
         st.success("Data successfully uploaded!")
 
-        # Call your similarity function here with df as argument
-        # Make sure to replace similarity_func with your actual function
-        similarity_func(df)
+        # UI elements for column selection
+        text_column = st.selectbox("Select Text Column for Analysis", df.columns, key='text_column_selector')
+        identifier_column = st.selectbox("Select Identifier Column", df.columns, key='identifier_column_selector')
+        additional_columns = st.multiselect("Select Additional Columns to Display", df.columns, key='additional_columns_selector')
+        
+        # Save selected columns
+        if st.button('Save Selected Columns for Analysis', key='save_selected_columns_button'):           
+            st.session_state.text_column = text_column
+            st.session_state.identifier_column = identifier_column
+            st.session_state.additional_columns = additional_columns
+        # Check if necessary columns are in session_state before calling similarity function
+        
+        
+        if all(key in st.session_state for key in ['text_column', 'identifier_column', 'additional_columns']):
+            similarity_func(df)
 
     # Create expander for Information Box
-    with st.expander("How it works", expanded=True):
+    with st.expander("How it works", expanded=False):
         st.markdown("""
         The script is designed to process and analyze text data, identifying and quantifying similarities between different pieces of text.
 
@@ -1021,7 +1055,7 @@ def Similarity_Analysis(df):
         """)
 
     # Create expander for Script Box
-    with st.expander("Script", expanded=True):
+    with st.expander("Script", expanded=False):
         st.code("""
         import pandas as pd
         from nltk.corpus import stopwords
