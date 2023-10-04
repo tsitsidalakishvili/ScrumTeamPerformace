@@ -45,20 +45,20 @@ def read_csv_files(uploaded_file_iterative, uploaded_file_eigen):
 
 sprint_bins = [
     ('09 Nov 2022', '30 Nov 2022'),
-    ('30 Nov 2022', '21 Dec 2022'),
-    ('04 Jan 2023', '25 Jan 2023'),
-    ('25 Jan 2023', '15 Feb 2023'),
-    ('15 Feb 2023', '08 Mar 2023'),
-    ('08 Mar 2023', '29 Mar 2023'),
-    ('29 Mar 2023', '19 Apr 2023'),
-    ('19 Apr 2023', '10 May 2023'),
-    ('10 May 2023', '31 May 2023'),
-    ('31 May 2023', '21 June 2023'),
-    ('21 June 2023', '12 July 2023'),
-    ('12 July 2023', '2 August 2023'),
-    ('2 August 2023', '23 August 2023'),
-    ('23 August 2023', '13 September 2023'),
-    ('13 September 2023', '4 Oct 2023')
+    ('01 Dec 2022', '21 Dec 2022'),
+    ('05 Jan 2023', '25 Jan 2023'),
+    ('26 Jan 2023', '15 Feb 2023'),
+    ('16 Feb 2023', '08 Mar 2023'),
+    ('09 Mar 2023', '29 Mar 2023'),
+    ('30 Mar 2023', '19 Apr 2023'),
+    ('20 Apr 2023', '10 May 2023'),
+    ('11 May 2023', '31 May 2023'),
+    ('01 June 2023', '21 June 2023'),
+    ('22 June 2023', '12 July 2023'),
+    ('13 July 2023', '02 August 2023'),
+    ('03 August 2023', '23 August 2023'),
+    ('24 August 2023', '13 September 2023'),
+    ('14 September 2023', '04 Oct 2023')
 
 ]
 
