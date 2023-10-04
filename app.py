@@ -5,10 +5,6 @@ import plotly.express as px
 import numpy as np
 from jira import JIRA
 import nltk
-from wordcloud import WordCloud
-import matplotlib.pyplot as plt
-from io import BytesIO
-
 from nltk.corpus import stopwords
 import re
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -27,7 +23,18 @@ import csv
 import plotly.express as px
 import csv
 from wordcloud import WordCloud 
-
+import plotly.graph_objects as go
+import matplotlib.pyplot as plt
+import streamlit as st
+import pandas as pd
+#import pandas_profiling  
+import plotly.express as px
+import numpy as np
+from jira import JIRA
+import nltk
+from wordcloud import WordCloud
+import matplotlib.pyplot as plt
+from io import BytesIO
 
 # Download stopwords if not already downloaded
 nltk.download('stopwords')
@@ -88,7 +95,6 @@ def extract_key_ID(df):
     return df
 
 
-
 def similarity_func(df):
     with st.expander("Similarity Functionality"):
         st.subheader("Similarity Results")
@@ -122,6 +128,7 @@ def similarity_func(df):
                     st.error(f"Error running similarity analysis. Error: {str(e)}")
             else:
                 st.error("Selected columns are not present in the data. Please check the column names and try again.")
+
 
 
 
@@ -1019,9 +1026,6 @@ def display_tab5(df, assignee_rates, sprint_bins):
     st.dataframe(filtered_df)
 
 
-
-
-
 def Similarity_Analysis(df):
     st.header("Similarity Analysis")
 
@@ -1119,6 +1123,16 @@ def Similarity_Analysis(df):
         
             return merged_df
         """, language='python')
+
+
+
+
+
+
+
+
+
+
 
 DEFAULT_RATES = {
     "Pawel G": 42.80,
