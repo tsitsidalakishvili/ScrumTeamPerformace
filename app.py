@@ -57,7 +57,8 @@ sprint_bins = [
     ('21 June 2023', '12 July 2023'),
     ('12 July 2023', '2 August 2023'),
     ('2 August 2023', '23 August 2023'),
-    ('23 August 2023', '13 September 2023')
+    ('23 August 2023', '13 September 2023'),
+    ('13 September 2023', '4 Oct 2023')
 
 ]
 
