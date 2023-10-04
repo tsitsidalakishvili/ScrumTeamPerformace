@@ -20,19 +20,7 @@ import plotly.graph_objects as go
 #from neo4j_integration import Neo4jManager
 import io  
 import csv
-import plotly.express as px
-import csv
 from wordcloud import WordCloud 
-import plotly.graph_objects as go
-import matplotlib.pyplot as plt
-import streamlit as st
-import pandas as pd
-#import pandas_profiling  
-import plotly.express as px
-import numpy as np
-from jira import JIRA
-import nltk
-from wordcloud import WordCloud
 import matplotlib.pyplot as plt
 from io import BytesIO
 
