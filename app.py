@@ -1126,14 +1126,6 @@ def Similarity_Analysis(df):
 
 
 
-
-
-
-
-
-
-
-
 DEFAULT_RATES = {
     "Pawel G": 42.80,
     "Marcin Ko": 42.80,
@@ -1168,6 +1160,9 @@ def run_app():
         with st.sidebar.expander("Upload Files"):
             uploaded_file_iterative = st.file_uploader("Choose Iterative CSV file", type="csv")
             uploaded_file_eigen = st.file_uploader("Choose Eigen CSV file", type="csv")
+        with st.sidebar.expander("Note"):
+            st.write("The charts do not account for time and effort spent on planning; they only reflect development work.")
+    
 
         # If both files are uploaded, process them for other tabs
         df = None
@@ -1177,7 +1172,6 @@ def run_app():
         if df is not None:
             last_sprint_number = get_last_sprint_number(df)
             st.title(f"Dev Sprint 80 - {last_sprint_number}")
-            st.subheader("The charts do not account for time and effort spent on planning; they only reflect development work.")
 
             with st.expander("Assignee Rates"):
                 assignee_rates = get_assignee_rates(df)
