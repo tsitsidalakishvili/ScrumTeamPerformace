@@ -1,14 +1,4 @@
 
-None selected 
-
-Skip to content
-Using Gmail with screen readers
-retro 
-Conversations
-2.19 GB of 15 GB used
-Terms · Privacy · Programme Policies
-Last account activity: in 1 minute
-Open in 1 other location · Details
 What should we have done better?
 a) The planning workload on developers significantly slowed down the delivery speed.
 b) Poor long-term planning and being overly optimistic about what could be delivered.
@@ -76,15 +66,9 @@ Improve cooperation and communication during the migration process.
 
 avarage size of tickets per assignee
 
-retro
-
 
 more involvment from product owner. communication with client is terrible. we need product owner to define requrements. not defined properly by Product Owner
 
 
 still problem with devops team. make our claster stable. 
 
-
-
-retro.txt
-Displaying retro.txt.
