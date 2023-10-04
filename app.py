@@ -202,14 +202,7 @@ def load_data(uploaded_file_iterative, uploaded_file_eigen, sprint_bins):
         return None
 
 #-------------------------------------------------------------------------------------------------------------------------------------#
-DEFAULT_RATES = {
-    "Pawel G": 42.80,
-    "Marcin Ko": 42.80,                                               
-    "Marcin Kl": 26.75,
-    "Lukasz": 31.03,
-    "Alek D": 26.75,
-    "Dawid N": 26.75
-}
+
 # Constants
 DEFAULT_BG_COLOR = 'rgba(0, 0, 0, 0)'
 
