@@ -302,107 +302,42 @@ def display_tab1(df, assignee_rates):
     """
     Display visualizations and data for Tab 1.
     """
-    df['Work date'] = pd.to_datetime(df['Work date'], infer_datetime_format=True)
-    df['Cost'] = df['Hours'] * df['Assignee'].map(assignee_rates)
-
-
     epic_cost_data = df.groupby(['Epic', 'CoreTimeClient'])['Cost'].sum().reset_index()
-    epic_sum_data = epic_cost_data.groupby('Epic')['Cost'].sum().reset_index()
     epic_hours_fig = px.bar(
         epic_cost_data,
         x='Cost',
         y='Epic',
         color='CoreTimeClient',
         orientation='h',
-        labels={'Cost': '', 'Epic': 'Epic', 'CoreTimeClient': 'CoreTimeClient'},
         title='Cost by Epics'
     )
-    max_cost = epic_sum_data['Cost'].max()
-    for i, row in epic_sum_data.iterrows():
-        x = max_cost * 1.01
-        y = row['Epic']
-        text = f"{row['Cost']:.2f} €"
-        epic_hours_fig.add_annotation(
-            x=x,
-            y=y,
-            text=text,
-            showarrow=False,
-            font=dict(color='white'),
-            xshift=10,
-            align='left'
-        )
-    epic_hours_fig.update_layout(
-        height=600,
-        width=1400,
-        margin=dict(l=0, r=0, t=50, b=0),
-        plot_bgcolor='rgba(0, 0, 0, 0)',
-        paper_bgcolor='rgba(0, 0, 0, 0)',
-        shapes=[
-            dict(
-                type='rect',
-                xref='paper',
-                yref='paper',
-                x0=0,
-                y0=0,
-                x1=1,
-                y1=1,
-                line=dict(color='white', width=1),
-                fillcolor='rgba(0, 0, 0, 0)'
-            )
-        ]
-    )
+
     treemap_data = df.groupby(['Sprint', 'Assignee', 'CoreTimeClient', 'CoreTimeProject', 'CoreTimePhase', 'CoreTimeActivity'])['Cost'].sum().reset_index()
     treemap_fig = px.treemap(
         treemap_data,
-        path=['Sprint', 'Assignee','CoreTimeClient', 'CoreTimeProject', 'CoreTimePhase', 'CoreTimeActivity'],
+        path=['Sprint', 'Assignee', 'CoreTimeClient', 'CoreTimeProject', 'CoreTimePhase', 'CoreTimeActivity'],
         values='Cost',
         title='Cost by CoreTimeClient, Project, Phase, and Activity'
     )
-    treemap_fig.update_layout(
-        height=600,
-        width=800,
-        margin=dict(l=0, r=0, t=50, b=0),
-        plot_bgcolor='rgba(0, 0, 0, 0)',
-        paper_bgcolor='rgba(0, 0, 0, 0)',
-        shapes=[
-            dict(
-                type='rect',
-                xref='paper',
-                yref='paper',
-                x0=0,
-                y0=0,
-                x1=1,
-                y1=1,
-                line=dict(color='black', width=1),
-                fillcolor='rgba(0, 0, 0, 0)'
-            )
-        ]
-    )
-    
+
     line_chart_story_points = px.line(
         df.groupby(['Work date', 'CoreTimeClient'])['Story Points'].sum().reset_index(),
         x='Work date',
         y='Story Points',
         color='CoreTimeClient',
-        labels={'Work date': 'Week', 'Story Points': 'Story Points', 'CoreTimeClient': 'Client'},
         title='Story Points Delivered Weekly by Client'
     )
+
     line_chart_cost = px.line(
         df.groupby(['Work date', 'CoreTimeClient'])['Cost'].sum().reset_index(),
         x='Work date',
         y='Cost',
         color='CoreTimeClient',
-        labels={'Work date': 'Week', 'Cost': 'Cost', 'CoreTimeClient': 'Client'},
         title='Weekly Cost by Client'
     )
 
-
-    # Outer container# Outer container
-    outer_container = st.container()
-    
-    with outer_container:
-        container2 = st.container()
-        col2, col3 = container2.columns(2)
+    with st.container():
+        col2, col3 = st.columns(2)
 
         col2.plotly_chart(epic_hours_fig, use_container_width=True)
         col2.plotly_chart(line_chart_cost, use_container_width=True)
@@ -410,12 +345,6 @@ def display_tab1(df, assignee_rates):
         col3.plotly_chart(treemap_fig, use_container_width=True)
         col3.plotly_chart(line_chart_story_points, use_container_width=True)
 
-    search_value = st.text_input("Search for value in table rows:", "")
-
-    # Filter the DataFrame based on the search input
-    filtered_df = df[df.apply(lambda row: search_value.lower() in str(row).lower(), axis=1)] if search_value else df
-    # Display the filtered DataFrame as a table
-    st.dataframe(filtered_df)
 #-----------------------------------------------------------------------------------------------------------------------#
 
 def calculate_average_ratio_by_project(df):
