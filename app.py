@@ -1121,11 +1121,7 @@ DEFAULT_RATES = {
     "Dawid N": 26.75
 }
 
-#---------------------------------------------------------------------------------------------------#
-def display_tab6():
-    st.header("Tab 6: Chat with Documents")
-
-    class CustomDataChatbot:
+ class CustomDataChatbot:
     
         def __init__(self):
             utils.configure_openai_api_key()
@@ -1177,6 +1173,12 @@ def display_tab6():
             llm = ChatOpenAI(model_name=self.openai_model, temperature=0, streaming=True)
             qa_chain = ConversationalRetrievalChain.from_llm(llm, retriever=retriever, memory=memory, verbose=True)
             return qa_chain
+            
+#---------------------------------------------------------------------------------------------------#
+def display_tab6():
+    st.header("Tab 6: Chat with Documents")
+
+   
 
     # User Inputs
     uploaded_files = st.file_uploader(label='Upload PDF files', type=['pdf'], accept_multiple_files=True)
