@@ -302,42 +302,107 @@ def display_tab1(df, assignee_rates):
     """
     Display visualizations and data for Tab 1.
     """
+    df['Work date'] = pd.to_datetime(df['Work date'], infer_datetime_format=True)
+    df['Cost'] = df['Hours'] * df['Assignee'].map(assignee_rates)
+
+
     epic_cost_data = df.groupby(['Epic', 'CoreTimeClient'])['Cost'].sum().reset_index()
+    epic_sum_data = epic_cost_data.groupby('Epic')['Cost'].sum().reset_index()
     epic_hours_fig = px.bar(
         epic_cost_data,
         x='Cost',
         y='Epic',
         color='CoreTimeClient',
         orientation='h',
+        labels={'Cost': '', 'Epic': 'Epic', 'CoreTimeClient': 'CoreTimeClient'},
         title='Cost by Epics'
     )
-
+    max_cost = epic_sum_data['Cost'].max()
+    for i, row in epic_sum_data.iterrows():
+        x = max_cost * 1.01
+        y = row['Epic']
+        text = f"{row['Cost']:.2f} €"
+        epic_hours_fig.add_annotation(
+            x=x,
+            y=y,
+            text=text,
+            showarrow=False,
+            font=dict(color='white'),
+            xshift=10,
+            align='left'
+        )
+    epic_hours_fig.update_layout(
+        height=600,
+        width=1400,
+        margin=dict(l=0, r=0, t=50, b=0),
+        plot_bgcolor='rgba(0, 0, 0, 0)',
+        paper_bgcolor='rgba(0, 0, 0, 0)',
+        shapes=[
+            dict(
+                type='rect',
+                xref='paper',
+                yref='paper',
+                x0=0,
+                y0=0,
+                x1=1,
+                y1=1,
+                line=dict(color='white', width=1),
+                fillcolor='rgba(0, 0, 0, 0)'
+            )
+        ]
+    )
     treemap_data = df.groupby(['Sprint', 'Assignee', 'CoreTimeClient', 'CoreTimeProject', 'CoreTimePhase', 'CoreTimeActivity'])['Cost'].sum().reset_index()
     treemap_fig = px.treemap(
         treemap_data,
-        path=['Sprint', 'Assignee', 'CoreTimeClient', 'CoreTimeProject', 'CoreTimePhase', 'CoreTimeActivity'],
+        path=['Sprint', 'Assignee','CoreTimeClient', 'CoreTimeProject', 'CoreTimePhase', 'CoreTimeActivity'],
         values='Cost',
         title='Cost by CoreTimeClient, Project, Phase, and Activity'
     )
-
+    treemap_fig.update_layout(
+        height=600,
+        width=800,
+        margin=dict(l=0, r=0, t=50, b=0),
+        plot_bgcolor='rgba(0, 0, 0, 0)',
+        paper_bgcolor='rgba(0, 0, 0, 0)',
+        shapes=[
+            dict(
+                type='rect',
+                xref='paper',
+                yref='paper',
+                x0=0,
+                y0=0,
+                x1=1,
+                y1=1,
+                line=dict(color='black', width=1),
+                fillcolor='rgba(0, 0, 0, 0)'
+            )
+        ]
+    )
+    
     line_chart_story_points = px.line(
         df.groupby(['Work date', 'CoreTimeClient'])['Story Points'].sum().reset_index(),
         x='Work date',
         y='Story Points',
         color='CoreTimeClient',
+        labels={'Work date': 'Week', 'Story Points': 'Story Points', 'CoreTimeClient': 'Client'},
         title='Story Points Delivered Weekly by Client'
     )
-
     line_chart_cost = px.line(
         df.groupby(['Work date', 'CoreTimeClient'])['Cost'].sum().reset_index(),
         x='Work date',
         y='Cost',
         color='CoreTimeClient',
+        labels={'Work date': 'Week', 'Cost': 'Cost', 'CoreTimeClient': 'Client'},
         title='Weekly Cost by Client'
     )
 
-    with st.container():
-        col2, col3 = st.columns(2)
+
+    # Outer container# Outer container
+    outer_container = st.container()
+    
+    with outer_container:
+        container2 = st.container()
+        col2, col3 = container2.columns(2)
 
         col2.plotly_chart(epic_hours_fig, use_container_width=True)
         col2.plotly_chart(line_chart_cost, use_container_width=True)
@@ -345,6 +410,12 @@ def display_tab1(df, assignee_rates):
         col3.plotly_chart(treemap_fig, use_container_width=True)
         col3.plotly_chart(line_chart_story_points, use_container_width=True)
 
+    search_value = st.text_input("Search for value in table rows:", "")
+
+    # Filter the DataFrame based on the search input
+    filtered_df = df[df.apply(lambda row: search_value.lower() in str(row).lower(), axis=1)] if search_value else df
+    # Display the filtered DataFrame as a table
+    st.dataframe(filtered_df)
 #-----------------------------------------------------------------------------------------------------------------------#
 
 def calculate_average_ratio_by_project(df):
@@ -405,11 +476,26 @@ def generate_word_cloud_from_file(file_path):
         return word_cloud_data
 
 
-#-------------------------------------------------------------------------------------------------------------------------------------#
+
+
 def display_tab2(df, assignee_rates):
-    # Team Average Ratio by Sprint Line Chart
+    # Remove whitespace from column names (if any)
+    df.columns = df.columns.str.strip()
+
+    # Filter the DataFrame to only include rows where 'Done' is True
+    done_df = df[df['Status'] == 'Done']
+
+    # Group by 'Sprint' and aggregate based on the 'Story Points' and 'days' columns
+    sprint_summary = done_df.groupby('Sprint').agg({'Story Points': 'sum', 'days': 'sum'}).reset_index()
+
+
+        # Calculate the total story points and total days for each sprint
     sprint_totals = df.groupby('Sprint').agg({'Story Points': 'sum', 'days': 'sum'}).reset_index()
+
+    # Calculate the average ratio as story points divided by days for each sprint
     sprint_totals['Avg_Ratio'] = sprint_totals['Story Points'] / sprint_totals['days']
+
+    # Then, use the sprint_totals DataFrame for plotting the Team Average Ratio by Sprint
     fig2 = go.Figure()
     fig2.add_trace(go.Scatter(
         x=sprint_totals['Sprint'],
@@ -419,9 +505,23 @@ def display_tab2(df, assignee_rates):
         line=dict(width=2),
     ))
 
-    # Average Ratio by Assignee and Core Time Phase Radar Chart
+
+
+    # Update layout for the line chart
+    fig2.update_layout(
+        title='Team Average Ratio by Sprint',  # Add title for the line chart
+        xaxis=dict(title='Sprint'),
+        yaxis=dict(title='Average Ratio'),
+        height=500,
+        margin=dict(l=100, r=100, t=100, b=100),
+    )
+
+
     avg_ratio_assignee_phase = df.groupby(['Assignee', 'CoreTimePhase'])['Avg_Ratio'].mean().reset_index()
+
     fig3 = go.Figure()
+
+    # Add traces for each Assignee
     for assignee in avg_ratio_assignee_phase['Assignee'].unique():
         assignee_data = avg_ratio_assignee_phase[avg_ratio_assignee_phase['Assignee'] == assignee]
         fig3.add_trace(go.Scatterpolar(
@@ -432,39 +532,111 @@ def display_tab2(df, assignee_rates):
             hovertemplate='%{theta}: %{r:.2f}<extra></extra>',
         ))
 
-    # Assignee Capacity and Workload Horizontal Bar Chart
-    current_sprint_number = get_last_sprint_number(df)  # Assuming a function to get the current sprint number
+    # Update layout for the Radar Chart
+    fig3.update_layout(
+        title='Average Ratio by Assignee and Core Time Phase',  # Add title for the radar chart
+        polar=dict(
+            radialaxis=dict(
+                title='Average Ratio',
+                tickmode='linear',
+                tickvals=[0, 0.5, 1],
+            ),
+            angularaxis=dict(
+                tickmode='array',
+                tickvals=avg_ratio_assignee_phase['CoreTimePhase'].unique(),
+            ),
+        ),
+        showlegend=True,
+        legend=dict(
+            title='Assignee',
+            traceorder='normal',
+            font=dict(size=10),
+        ),
+        height=500,
+        margin=dict(l=100, r=100, t=100, b=100),
+    )
+
+    # Calculate average ratio by CoreTimeProject
+    avg_ratio_by_project = calculate_average_ratio_by_project(df)
+
+    # Create the CFD chart
+    cfd_chart = create_cfd_chart(avg_ratio_by_project)
+
+
+
+    
+
+    # First, filter the data for the current sprint
+    current_sprint_number = get_last_sprint_number(df)  # Assuming you have a function to get the current sprint number
+    # Replace NaN values with an empty string before checking for containment
+    df['Sprint'] = df['Sprint'].astype(str)
     df_current_sprint = df[df['Sprint'].str.contains(str(current_sprint_number))]
-    workload = df_current_sprint['Story Points'].sum()
+
+        # Calculate assignee capacity
     assignee_capacity = assignee_median_capacity(df_current_sprint, df_current_sprint['Avg_Ratio'])
+    df_current_sprint['Assignee Capacity'] = assignee_capacity
+
+    # Calculate workload as sum of story points for the filtered data
+    workload = df_current_sprint['Story Points'].sum()
+
+    # Calculate Assignee capacity in the current sprint after deducting the workload
     assignee_capacity_current_sprint = assignee_capacity - workload
+
+    # Create a DataFrame to hold the values for the horizontal bar chart
     data = pd.DataFrame({
         'Assignee': df_current_sprint['Assignee'],
         'Workload': workload,
         'Capacity': assignee_capacity_current_sprint
     })
+
+    # Normalize the capacity and workload to percentages (of 100)
     total_capacity = assignee_capacity
     data['Assignee Workload'] = (data['Workload'] / total_capacity) * 100
     data['Assignee Capacity'] = (data['Capacity'] / total_capacity) * 100
+
+    # Create the horizontal bar chart
     assignee_capacity_fig = px.bar(
         data,
         x=['Assignee Capacity', 'Assignee Workload'],
         y='Assignee',
         orientation='h',
-        barmode='relative',
+        barmode='relative',  # To show both workload and capacity as percentages of total capacity
         title=f'Assignee Capacity and Workload in Sprint {current_sprint_number}',
         labels={'value': 'Percentage', 'variable': 'Metric'},
         color_discrete_map={'Assignee Capacity': 'green', 'Assignee Workload': 'red'}
     )
 
-    # Display the charts
+    # Set the range of the X-axis to [0, 100]
+    assignee_capacity_fig.update_xaxes(range=[0, 100])
+
+    # Display the charts in two columns
     col1, col2 = st.columns(2)
+
     with col1:
         st.plotly_chart(fig2, use_container_width=True)
+        st.subheader("Sprint Retrospective Word Cloud")
+        word_cloud_data = generate_word_cloud_from_file("retro.txt")
+        st.image(word_cloud_data)
+
 
     with col2:
-        st.plotly_chart(fig3, use_container_width=True)
-        st.plotly_chart(assignee_capacity_fig, use_container_width=True)
+        combined_chart = create_combined_chart(df, sprint_summary, sprint_totals)
+        st.plotly_chart(combined_chart, use_container_width=True)
+        st.plotly_chart(cfd_chart, use_container_width=True)
+
+    # Add a search input for the table
+    search_value = st.text_input("Search for value in table rows:", "", key="search_input_tab2")
+
+    # Filter the DataFrame based on the search input
+    if search_value:
+        filtered_df = df[df.apply(lambda row: search_value.lower() in str(row).lower(), axis=1)]
+    else:
+        filtered_df = df  # If no search input, show the original DataFrame
+
+    # Display the filtered DataFrame as a table
+    st.dataframe(filtered_df)
+
+#-------------------------------------------------------------------------------------------------------------------------------------#
 
 
 
