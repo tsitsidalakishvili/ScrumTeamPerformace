@@ -1124,7 +1124,7 @@ DEFAULT_RATES = {
 #---------------------------------------------------------------------------------------------------#
 
 
-def display_tab6():
+def display_tab6(uploaded_files, user_query):
     st.header("Tab 6: Chat with Documents")
 
     # User Inputs
