@@ -405,26 +405,11 @@ def generate_word_cloud_from_file(file_path):
         return word_cloud_data
 
 
-
-
+#-------------------------------------------------------------------------------------------------------------------------------------#
 def display_tab2(df, assignee_rates):
-    # Remove whitespace from column names (if any)
-    df.columns = df.columns.str.strip()
-
-    # Filter the DataFrame to only include rows where 'Done' is True
-    done_df = df[df['Status'] == 'Done']
-
-    # Group by 'Sprint' and aggregate based on the 'Story Points' and 'days' columns
-    sprint_summary = done_df.groupby('Sprint').agg({'Story Points': 'sum', 'days': 'sum'}).reset_index()
-
-
-        # Calculate the total story points and total days for each sprint
+    # Team Average Ratio by Sprint Line Chart
     sprint_totals = df.groupby('Sprint').agg({'Story Points': 'sum', 'days': 'sum'}).reset_index()
-
-    # Calculate the average ratio as story points divided by days for each sprint
     sprint_totals['Avg_Ratio'] = sprint_totals['Story Points'] / sprint_totals['days']
-
-    # Then, use the sprint_totals DataFrame for plotting the Team Average Ratio by Sprint
     fig2 = go.Figure()
     fig2.add_trace(go.Scatter(
         x=sprint_totals['Sprint'],
@@ -434,23 +419,9 @@ def display_tab2(df, assignee_rates):
         line=dict(width=2),
     ))
 
-
-
-    # Update layout for the line chart
-    fig2.update_layout(
-        title='Team Average Ratio by Sprint',  # Add title for the line chart
-        xaxis=dict(title='Sprint'),
-        yaxis=dict(title='Average Ratio'),
-        height=500,
-        margin=dict(l=100, r=100, t=100, b=100),
-    )
-
-
+    # Average Ratio by Assignee and Core Time Phase Radar Chart
     avg_ratio_assignee_phase = df.groupby(['Assignee', 'CoreTimePhase'])['Avg_Ratio'].mean().reset_index()
-
     fig3 = go.Figure()
-
-    # Add traces for each Assignee
     for assignee in avg_ratio_assignee_phase['Assignee'].unique():
         assignee_data = avg_ratio_assignee_phase[avg_ratio_assignee_phase['Assignee'] == assignee]
         fig3.add_trace(go.Scatterpolar(
@@ -461,111 +432,39 @@ def display_tab2(df, assignee_rates):
             hovertemplate='%{theta}: %{r:.2f}<extra></extra>',
         ))
 
-    # Update layout for the Radar Chart
-    fig3.update_layout(
-        title='Average Ratio by Assignee and Core Time Phase',  # Add title for the radar chart
-        polar=dict(
-            radialaxis=dict(
-                title='Average Ratio',
-                tickmode='linear',
-                tickvals=[0, 0.5, 1],
-            ),
-            angularaxis=dict(
-                tickmode='array',
-                tickvals=avg_ratio_assignee_phase['CoreTimePhase'].unique(),
-            ),
-        ),
-        showlegend=True,
-        legend=dict(
-            title='Assignee',
-            traceorder='normal',
-            font=dict(size=10),
-        ),
-        height=500,
-        margin=dict(l=100, r=100, t=100, b=100),
-    )
-
-    # Calculate average ratio by CoreTimeProject
-    avg_ratio_by_project = calculate_average_ratio_by_project(df)
-
-    # Create the CFD chart
-    cfd_chart = create_cfd_chart(avg_ratio_by_project)
-
-
-
-    
-
-    # First, filter the data for the current sprint
-    current_sprint_number = get_last_sprint_number(df)  # Assuming you have a function to get the current sprint number
-    # Replace NaN values with an empty string before checking for containment
-    df['Sprint'] = df['Sprint'].astype(str)
+    # Assignee Capacity and Workload Horizontal Bar Chart
+    current_sprint_number = get_last_sprint_number(df)  # Assuming a function to get the current sprint number
     df_current_sprint = df[df['Sprint'].str.contains(str(current_sprint_number))]
-
-        # Calculate assignee capacity
-    assignee_capacity = assignee_median_capacity(df_current_sprint, df_current_sprint['Avg_Ratio'])
-    df_current_sprint['Assignee Capacity'] = assignee_capacity
-
-    # Calculate workload as sum of story points for the filtered data
     workload = df_current_sprint['Story Points'].sum()
-
-    # Calculate Assignee capacity in the current sprint after deducting the workload
+    assignee_capacity = assignee_median_capacity(df_current_sprint, df_current_sprint['Avg_Ratio'])
     assignee_capacity_current_sprint = assignee_capacity - workload
-
-    # Create a DataFrame to hold the values for the horizontal bar chart
     data = pd.DataFrame({
         'Assignee': df_current_sprint['Assignee'],
         'Workload': workload,
         'Capacity': assignee_capacity_current_sprint
     })
-
-    # Normalize the capacity and workload to percentages (of 100)
     total_capacity = assignee_capacity
     data['Assignee Workload'] = (data['Workload'] / total_capacity) * 100
     data['Assignee Capacity'] = (data['Capacity'] / total_capacity) * 100
-
-    # Create the horizontal bar chart
     assignee_capacity_fig = px.bar(
         data,
         x=['Assignee Capacity', 'Assignee Workload'],
         y='Assignee',
         orientation='h',
-        barmode='relative',  # To show both workload and capacity as percentages of total capacity
+        barmode='relative',
         title=f'Assignee Capacity and Workload in Sprint {current_sprint_number}',
         labels={'value': 'Percentage', 'variable': 'Metric'},
         color_discrete_map={'Assignee Capacity': 'green', 'Assignee Workload': 'red'}
     )
 
-    # Set the range of the X-axis to [0, 100]
-    assignee_capacity_fig.update_xaxes(range=[0, 100])
-
-    # Display the charts in two columns
+    # Display the charts
     col1, col2 = st.columns(2)
-
     with col1:
         st.plotly_chart(fig2, use_container_width=True)
-        st.subheader("Sprint Retrospective Word Cloud")
-        word_cloud_data = generate_word_cloud_from_file("retro.txt")
-        st.image(word_cloud_data)
-
 
     with col2:
-        combined_chart = create_combined_chart(df, sprint_summary, sprint_totals)
-        st.plotly_chart(combined_chart, use_container_width=True)
-        st.plotly_chart(cfd_chart, use_container_width=True)
-
-    # Add a search input for the table
-    search_value = st.text_input("Search for value in table rows:", "", key="search_input_tab2")
-
-    # Filter the DataFrame based on the search input
-    if search_value:
-        filtered_df = df[df.apply(lambda row: search_value.lower() in str(row).lower(), axis=1)]
-    else:
-        filtered_df = df  # If no search input, show the original DataFrame
-
-    # Display the filtered DataFrame as a table
-    st.dataframe(filtered_df)
-
-#-------------------------------------------------------------------------------------------------------------------------------------#
+        st.plotly_chart(fig3, use_container_width=True)
+        st.plotly_chart(assignee_capacity_fig, use_container_width=True)
 
 
 
