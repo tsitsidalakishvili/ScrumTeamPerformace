@@ -1120,6 +1120,39 @@ DEFAULT_RATES = {
     "Dawid N": 26.75
 }
 
+#---------------------------------------------------------------------------------------------------#
+
+
+def display_tab6():
+    st.header("Tab 6: Chat with Documents")
+
+    # User Inputs
+    uploaded_files = st.file_uploader(label='Upload PDF files', type=['pdf'], accept_multiple_files=True)
+    user_query = st.text_input("Ask me anything!")
+
+    if uploaded_files and user_query:
+        obj = CustomDataChatbot()
+        obj.setup_qa_chain(uploaded_files)
+
+        # Display user input
+        utils.display_msg(user_query, 'user')
+
+        # Send user query to the assistant
+        with st.chat_message("assistant"):
+            st_cb = StreamHandler(st.empty())
+            response = obj.qa_chain.run(user_query, callbacks=[st_cb])
+            st.session_state.messages.append({"role": "assistant", "content": response})
+
+    # Display PDF upload and chat input
+    with st.expander("PDF Upload"):
+        st.write("Upload PDF documents here.")
+        if not uploaded_files:
+            st.warning("Please upload PDF documents.")
+    
+    with st.expander("Chat with Documents"):
+        st.write("Ask questions related to the uploaded documents.")
+        if not user_query:
+            st.warning("Ask a question to get started.")
 
 #---------------------------------------------------------------------------------------------------#
 def run_app():
@@ -1131,7 +1164,8 @@ def run_app():
         "Individual Performance": display_tab4,
         "Costs": display_tab1,
         "Productivity & Workload": display_tab3,
-        "Similarity Analysis": Similarity_Analysis
+        "Similarity Analysis": Similarity_Analysis,
+        "Tab 6: Your Tab Name": display_tab6
     }
     
     selected_tab = st.sidebar.radio("Select a Tab", list(tabs.keys()))
