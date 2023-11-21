@@ -908,7 +908,8 @@ def display_tab5(df, assignee_rates, sprint_bins):
     # Calculate the 'Resolution Time' column for the filtered tasks
     df_current_sprint = df_current_sprint.dropna(subset=['Resolved'])
 
-    df_current_sprint_filtered['Resolution Time'] = (df_current_sprint_filtered['Resolved'] - df_current_sprint_filtered['Created']).dt.days
+    df_current_sprint_filtered.loc[:, 'Resolution Time'] = (df_current_sprint_filtered['Resolved'] - df_current_sprint_filtered['Created']).dt.days
+
 
 
     # Aggregate the resolution time by assignee (use the filtered data)
