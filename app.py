@@ -23,6 +23,19 @@ import csv
 from wordcloud import WordCloud 
 import matplotlib.pyplot as plt
 from io import BytesIO
+import os
+import utils
+import streamlit as st
+from streaming import StreamHandler
+import pandas as pd
+
+from langchain.chat_models import ChatOpenAI
+from langchain.document_loaders import PyPDFLoader
+from langchain.memory import ConversationBufferMemory
+from langchain.embeddings import HuggingFaceEmbeddings
+from langchain.chains import ConversationalRetrievalChain
+from langchain.vectorstores import DocArrayInMemorySearch
+from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 # Download stopwords if not already downloaded
 nltk.download('stopwords')
@@ -1124,19 +1137,108 @@ DEFAULT_RATES = {
 #---------------------------------------------------------------------------------------------------#
 
 
-def display_tab6(uploaded_files, user_query):
+
+st.set_page_config(page_title="ChatPDF", page_icon="📄")
+st.header('Chat with your documents')
+st.write('Has access to custom documents and can respond to user queries by referring to the content within those documents')
+
+class CustomDataChatbot:
+
+    def __init__(self):
+        utils.configure_openai_api_key()
+        self.openai_model = "gpt-3.5-turbo"
+
+    def save_file(self, file):
+        folder = 'tmp'
+        if not os.path.exists(folder):
+            os.makedirs(folder)
+        
+        file_path = f'./{folder}/{file.name}'
+        with open(file_path, 'wb') as f:
+            f.write(file.getvalue())
+        return file_path
+
+    @st.spinner('Analyzing documents..')
+    def setup_qa_chain(self, uploaded_files):
+        # Load documents
+        docs = []
+        for file in uploaded_files:
+            file_path = self.save_file(file)
+            loader = PyPDFLoader(file_path)
+            docs.extend(loader.load())
+        
+        # Split documents
+        text_splitter = RecursiveCharacterTextSplitter(
+            chunk_size=500,
+            chunk_overlap=20
+        )
+        splits = text_splitter.split_documents(docs)
+
+        # Create embeddings and store in vectordb
+        embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
+        vectordb = DocArrayInMemorySearch.from_documents(splits, embeddings)
+
+        # Define retriever
+        retriever = vectordb.as_retriever(
+            search_type='mmr',
+            search_kwargs={'k':2, 'fetch_k':4}
+        )
+
+        # Setup memory for contextual conversation        
+        memory = ConversationBufferMemory(
+            memory_key='chat_history',
+            return_messages=True
+        )
+
+        # Setup LLM and QA chain
+        llm = ChatOpenAI(model_name=self.openai_model, temperature=0.8, streaming=True)
+        qa_chain = ConversationalRetrievalChain.from_llm(llm, retriever=retriever, memory=memory, verbose=True)
+        return qa_chain
+
+    @utils.enable_chat_history
+    def main(self):
+
+        # User Inputs
+        uploaded_files = st.sidebar.file_uploader(label='Upload files', type=['pdf'], accept_multiple_files=True)
+        if not uploaded_files:
+            st.error("Please upload PDF documents to continue!")
+            st.stop()
+
+        user_query = st.chat_input(placeholder="Ask me anything!")
+
+        if uploaded_files and user_query:
+            qa_chain = self.setup_qa_chain(uploaded_files)
+
+            utils.display_msg(user_query, 'user')
+
+            with st.chat_message("assistant"):
+                st_cb = StreamHandler(st.empty())
+                response = qa_chain.run(user_query, callbacks=[st_cb])
+                st.session_state.messages.append({"role": "assistant", "content": response})
+
+if __name__ == "__main__":
+    obj = CustomDataChatbot()
+    obj.main()
+
+
+
+
+
+
+class CustomDataChatbot:
+    # ... (Your chatbot class definition)
+
+# Define a function for displaying Tab 6
+def display_tab6():
     st.header("Tab 6: Chat with Documents")
 
-    # User Inputs
-    if not uploaded_files:
-        uploaded_files = st.file_uploader(label='Upload PDF files', type=['pdf'], accept_multiple_files=True)
-    
-    if not user_query:
-        user_query = st.text_input("Ask me anything!")
+    # User Inputs and chatbot functionality
+    uploaded_files = st.file_uploader(label='Upload PDF files', type=['pdf'], accept_multiple_files=True)
+    user_query = st.text_input("Ask me anything!")
 
     if uploaded_files and user_query:
         obj = CustomDataChatbot()
-        obj.setup_qa_chain(uploaded_files)
+        qa_chain = obj.setup_qa_chain(uploaded_files)
 
         # Display user input
         utils.display_msg(user_query, 'user')
@@ -1144,7 +1246,7 @@ def display_tab6(uploaded_files, user_query):
         # Send user query to the assistant
         with st.chat_message("assistant"):
             st_cb = StreamHandler(st.empty())
-            response = obj.qa_chain.run(user_query, callbacks=[st_cb])
+            response = qa_chain.run(user_query, callbacks=[st_cb])
             st.session_state.messages.append({"role": "assistant", "content": response})
 
     # Display PDF upload and chat input
@@ -1157,6 +1259,8 @@ def display_tab6(uploaded_files, user_query):
         st.write("Ask questions related to the uploaded documents.")
         if not user_query:
             st.warning("Ask a question to get started.")
+
+            
 #---------------------------------------------------------------------------------------------------#
 
 
