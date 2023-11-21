@@ -1221,13 +1221,6 @@ if __name__ == "__main__":
     obj.main()
 
 
-
-
-
-
-class CustomDataChatbot:
-    # ... (Your chatbot class definition)
-
 # Define a function for displaying Tab 6
 def display_tab6():
     st.header("Tab 6: Chat with Documents")
