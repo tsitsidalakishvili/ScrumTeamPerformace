@@ -24,7 +24,6 @@ from wordcloud import WordCloud
 import matplotlib.pyplot as plt
 from io import BytesIO
 import os
-import utils
 import streamlit as st
 from streaming import StreamHandler
 import pandas as pd
