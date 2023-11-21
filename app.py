@@ -5,6 +5,7 @@ import plotly.express as px
 import numpy as np
 from jira import JIRA
 import nltk
+import chatbot
 from chatbot import CustomDataChatbot
 from nltk.corpus import stopwords
 import re
