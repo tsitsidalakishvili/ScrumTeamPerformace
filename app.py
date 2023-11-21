@@ -1165,7 +1165,7 @@ def run_app():
         "Costs": display_tab1,
         "Productivity & Workload": display_tab3,
         "Similarity Analysis": Similarity_Analysis,
-        "Tab 6: Your Tab Name": display_tab6
+        "Assistant": display_tab6
     }
     
     selected_tab = st.sidebar.radio("Select a Tab", list(tabs.keys()))
