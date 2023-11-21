@@ -25,7 +25,6 @@ import matplotlib.pyplot as plt
 from io import BytesIO
 import os
 import streamlit as st
-from streaming import StreamHandler
 import pandas as pd
 
 from langchain.chat_models import ChatOpenAI
