@@ -1128,12 +1128,6 @@ DEFAULT_RATES = {
 
 #---------------------------------------------------------------------------------------------------#
 
-
-
-st.set_page_config(page_title="ChatPDF", page_icon="📄")
-st.header('Chat with your documents')
-st.write('Has access to custom documents and can respond to user queries by referring to the content within those documents')
-
 class CustomDataChatbot:
 
     def __init__(self):
