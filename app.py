@@ -1159,6 +1159,8 @@ def display_tab6(uploaded_files, user_query):
 
 
 #---------------------------------------------------------------------------------------------------#
+
+
 def run_app():
     st.set_page_config(layout='wide')
 
@@ -1169,7 +1171,7 @@ def run_app():
         "Costs": display_tab1,
         "Productivity & Workload": display_tab3,
         "Similarity Analysis": Similarity_Analysis,
-        "Assistant": display_tab6
+        "Assistant": None  # No specific function associated with Assistant tab
     }
     
     selected_tab = st.sidebar.radio("Select a Tab", list(tabs.keys()))
@@ -1186,7 +1188,6 @@ def run_app():
         with st.sidebar.expander("Note"):
             st.write("The charts do not account for time and effort spent on planning; they only reflect development work.")
     
-
         # If both files are uploaded, process them for other tabs
         df = None
         if uploaded_file_iterative and uploaded_file_eigen:
@@ -1201,9 +1202,32 @@ def run_app():
 
             # Call the appropriate function for the selected tab
             selected_function = tabs[selected_tab]
-            selected_function(df, assignee_rates)
+            if selected_function:
+                selected_function(df, assignee_rates)
         else:
             st.warning("Upload files for the selected tab.")
+
+    # Assistant Tab (PDF Upload Functionality)
+    if selected_tab == "Assistant":
+        st.header("Tab 6: Chat with Documents")
+
+        uploaded_files = st.file_uploader(label='Upload PDF files', type=['pdf'], accept_multiple_files=True)
+        if uploaded_files:
+            # Process uploaded PDF files and chat functionality here
+            obj = CustomDataChatbot()
+            obj.setup_qa_chain(uploaded_files)
+            
+            user_query = st.text_input("Ask me anything!")
+
+            if user_query:
+                # Display user input
+                utils.display_msg(user_query, 'user')
+
+                # Send user query to the assistant
+                with st.chat_message("assistant"):
+                    st_cb = StreamHandler(st.empty())
+                    response = obj.qa_chain.run(user_query, callbacks=[st_cb])
+                    st.session_state.messages.append({"role": "assistant", "content": response})
 
 if __name__ == "__main__":
     run_app()
