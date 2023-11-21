@@ -27,13 +27,7 @@ import os
 import streamlit as st
 import pandas as pd
 
-from langchain.chat_models import ChatOpenAI
-from langchain.document_loaders import PyPDFLoader
-from langchain.memory import ConversationBufferMemory
-from langchain.embeddings import HuggingFaceEmbeddings
-from langchain.chains import ConversationalRetrievalChain
-from langchain.vectorstores import DocArrayInMemorySearch
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+
 
 # Download stopwords if not already downloaded
 nltk.download('stopwords')
