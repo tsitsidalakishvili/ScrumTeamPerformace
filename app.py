@@ -1123,13 +1123,15 @@ DEFAULT_RATES = {
 
 #---------------------------------------------------------------------------------------------------#
 
-
 def display_tab6(uploaded_files, user_query):
     st.header("Tab 6: Chat with Documents")
 
     # User Inputs
-    uploaded_files = st.file_uploader(label='Upload PDF files', type=['pdf'], accept_multiple_files=True)
-    user_query = st.text_input("Ask me anything!")
+    if not uploaded_files:
+        uploaded_files = st.file_uploader(label='Upload PDF files', type=['pdf'], accept_multiple_files=True)
+    
+    if not user_query:
+        user_query = st.text_input("Ask me anything!")
 
     if uploaded_files and user_query:
         obj = CustomDataChatbot()
@@ -1154,6 +1156,7 @@ def display_tab6(uploaded_files, user_query):
         st.write("Ask questions related to the uploaded documents.")
         if not user_query:
             st.warning("Ask a question to get started.")
+
 
 #---------------------------------------------------------------------------------------------------#
 def run_app():
