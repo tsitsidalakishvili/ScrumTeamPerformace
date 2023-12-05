@@ -64,10 +64,10 @@ sprint_bins = [
     ('14 September 2023', '04 Oct 2023'),
     ('05 October 2023', '25 October 2023'),
     ('26 October 2023', '15 November 2023'),
-
-    
-
+    ('16 Nov 2023', '06 Dec 2023'),
+    ('07 Dec 2023', '20 Dec 2023')
 ]
+
 
 # Convert the date strings to datetime objects
 sprint_bins = [(pd.to_datetime(start), pd.to_datetime(end)) for start, end in sprint_bins]
