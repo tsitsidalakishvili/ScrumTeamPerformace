@@ -1194,7 +1194,7 @@ def run_app():
             uploaded_file_iterative = st.file_uploader("Choose Iterative CSV file", type="csv")
             uploaded_file_eigen = st.file_uploader("Choose Eigen CSV file", type="csv")
         with st.sidebar.expander("Note"):
-            st.write("The charts do not account for time and effort spent on planning; they only reflect development work.")
+            st.write("The charts do not account for time and effort spent on planning; It only reflect development work.")
     
         # If both files are uploaded, process them for other tabs
         df = None
