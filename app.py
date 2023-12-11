@@ -632,7 +632,7 @@ def display_tab2(df, assignee_rates):
 
     with col1:
         st.plotly_chart(fig2, use_container_width=True)
-        st.subheader("Sprint Retrospective Word Cloud")
+        #st.subheader("Sprint Retrospective Word Cloud")
          #word_cloud_data = generate_word_cloud_from_file("retro.txt")
          #st.image(word_cloud_data)
         st.plotly_chart(box_plot, use_container_width=True)
