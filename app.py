@@ -617,6 +617,16 @@ def display_tab2(df, assignee_rates):
     # Set the range of the X-axis to [0, 100]
     assignee_capacity_fig.update_xaxes(range=[0, 100])
 
+
+
+    # Create a box plot to visualize the distribution of story points by assignee
+    box_plot = px.box(df, x='Assignee', y='Story Points', title='Story Points Distribution by Assignee')
+
+    # Customize the box plot appearance
+    box_plot.update_traces(marker=dict(size=5))
+    box_plot.update_xaxes(title='Assignee')
+    box_plot.update_yaxes(title='Story Points')
+
     # Display the charts in two columns
     col1, col2 = st.columns(2)
 
@@ -626,11 +636,11 @@ def display_tab2(df, assignee_rates):
         word_cloud_data = generate_word_cloud_from_file("retro.txt")
         st.image(word_cloud_data)
 
-
     with col2:
         combined_chart = create_combined_chart(df, sprint_summary, sprint_totals)
         st.plotly_chart(combined_chart, use_container_width=True)
         st.plotly_chart(cfd_chart, use_container_width=True)
+        st.plotly_chart(box_plot, use_container_width=True)
 
     # Add a search input for the table
     search_value = st.text_input("Search for value in table rows:", "", key="search_input_tab2")
@@ -643,6 +653,10 @@ def display_tab2(df, assignee_rates):
 
     # Display the filtered DataFrame as a table
     st.dataframe(filtered_df)
+
+# Call the display_tab2 function with your DataFrame and assignee_rates
+# display_tab2(df, assignee_rates)
+
 
 #-------------------------------------------------------------------------------------------------------------------------------------#
 
