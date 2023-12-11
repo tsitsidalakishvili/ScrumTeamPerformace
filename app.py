@@ -1136,12 +1136,12 @@ def Similarity_Analysis(df):
 
 
 DEFAULT_RATES = {
-    "Pawel G": 42.80,
-    "Marcin Ko": 42.80,
-    "Marcin Kl": 26.75,
-    "Lukasz": 31.03,
-    "Alek D": 26.75,
-    "Dawid N": 26.75
+    "Pawel G": 00.00,
+    "Marcin Ko": 00.00,
+    "Marcin Kl": 00.00,
+    "Lukasz": 00.00,
+    "Alek D": 00.00,
+    "Dawid N": 00.00
 }
 
 #---------------------------------------------------------------------------------------------------#
