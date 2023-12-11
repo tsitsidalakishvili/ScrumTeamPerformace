@@ -1149,7 +1149,7 @@ DEFAULT_RATES = {
 
 
 # Define a function for displaying Tab 6
-#def display_tab6():
+def display_tab6():
     st.header("Tab 6: Chat with Documents")
 
     # User Inputs and chatbot functionality
@@ -1193,8 +1193,8 @@ def run_app():
         "Individual Performance": display_tab4,
         "Costs": display_tab1,
         "Productivity & Workload": display_tab3,
-        "Similarity Analysis": Similarity_Analysis,
-        "Assistant": None  # No specific function associated with Assistant tab
+        #"Similarity Analysis": Similarity_Analysis,
+        #"Assistant": None  # No specific function associated with Assistant tab
     }
     
     selected_tab = st.sidebar.radio("Select a Tab", list(tabs.keys()))
