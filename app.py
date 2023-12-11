@@ -633,14 +633,15 @@ def display_tab2(df, assignee_rates):
     with col1:
         st.plotly_chart(fig2, use_container_width=True)
         st.subheader("Sprint Retrospective Word Cloud")
-        word_cloud_data = generate_word_cloud_from_file("retro.txt")
-        st.image(word_cloud_data)
+         #word_cloud_data = generate_word_cloud_from_file("retro.txt")
+         #st.image(word_cloud_data)
+        st.plotly_chart(box_plot, use_container_width=True)
+
 
     with col2:
         combined_chart = create_combined_chart(df, sprint_summary, sprint_totals)
         st.plotly_chart(combined_chart, use_container_width=True)
         st.plotly_chart(cfd_chart, use_container_width=True)
-        st.plotly_chart(box_plot, use_container_width=True)
 
     # Add a search input for the table
     search_value = st.text_input("Search for value in table rows:", "", key="search_input_tab2")
