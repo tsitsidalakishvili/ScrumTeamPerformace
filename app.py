@@ -1142,7 +1142,7 @@ def Similarity_Analysis(df):
 
 
 #---------------------------------------------------------------------------------------------------#
-def display_LLM():
+def display_LLM(df, assignee_rates):
 
     # Streamlit App Layout
     st.title('Connect Data To LLM')
@@ -1544,6 +1544,14 @@ def run_app():
     selected_tab = st.sidebar.radio("Select a Tab", list(tabs.keys()))
     if 'selected_tab' not in st.session_state or st.session_state.selected_tab != selected_tab:
         st.session_state.selected_tab = selected_tab
+
+
+    if selected_tab == "LLM":
+        display_LLM()
+    else:
+        # Proceed with the existing logic for other tabs
+        selected_function(df, assignee_rates)
+                        
 
     if selected_tab == "Similarity Analysis":
         tabs[selected_tab](None)  # Directly call Similarity_Analysis without waiting for file uploads
