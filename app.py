@@ -1530,79 +1530,49 @@ DEFAULT_RATES = {
 def run_app():
     st.set_page_config(layout='wide')
 
+    # Define tabs dictionary
     tabs = {
-    #"Current Sprint": display_tab5,
-    "Team Performance": display_tab2,
-    "Individual Performance": display_tab4,
-    "Costs": display_tab1,
-    "Productivity & Workload": display_tab3,
-    "LLM": display_LLM,  # Assuming LLM is a function or module you want to add as a new tab
-    #"Similarity Analysis": Similarity_Analysis,
-    #"Assistant": None  # No specific function associated with Assistant tab
-}
-    
+        "Team Performance": display_tab2,
+        "Individual Performance": display_tab4,
+        "Costs": display_tab1,
+        "Productivity & Workload": display_tab3,
+        "LLM": display_LLM,  # LLM function does not require df and assignee_rates
+    }
+
+    # Get user selection
     selected_tab = st.sidebar.radio("Select a Tab", list(tabs.keys()))
     if 'selected_tab' not in st.session_state or st.session_state.selected_tab != selected_tab:
         st.session_state.selected_tab = selected_tab
 
+    # Initialize variables
+    df = None
+    assignee_rates = None
 
-    if selected_tab == "LLM":
-        display_LLM()
-    else:
-        # Proceed with the existing logic for other tabs
-        selected_function(df, assignee_rates)
-                        
-
-    if selected_tab == "Similarity Analysis":
-        tabs[selected_tab](None)  # Directly call Similarity_Analysis without waiting for file uploads
-    else:
-        # Only display file uploaders for other tabs, not for Similarity Analysis
+    # Conditional loading for tabs that require CSV file uploads
+    if selected_tab not in ["LLM", "Similarity Analysis", "Assistant"]:  # Add other tabs that don't require CSV uploads as necessary
         with st.sidebar.expander("Upload Files"):
             uploaded_file_iterative = st.file_uploader("Choose Iterative CSV file", type="csv")
             uploaded_file_eigen = st.file_uploader("Choose Eigen CSV file", type="csv")
-        with st.sidebar.expander("Note"):
-            st.write("The charts do not account for time and effort spent on planning; It only reflect development work.")
-    
-        # If both files are uploaded, process them for other tabs
-        df = None
+
         if uploaded_file_iterative and uploaded_file_eigen:
             df = load_data(uploaded_file_iterative, uploaded_file_eigen, sprint_bins)
-
-        if df is not None:
-            last_sprint_number = get_last_sprint_number(df)
-            st.title(f"Dev Sprint 80 - {last_sprint_number}")
-
-            with st.expander("Assignee Rates"):
+            if df is not None:
                 assignee_rates = get_assignee_rates(df)
 
-            # Call the appropriate function for the selected tab
-            selected_function = tabs[selected_tab]
-            if selected_function:
-                selected_function(df, assignee_rates)
+    # Handle each tab specifically
+    if selected_tab in tabs:
+        if selected_tab == "LLM":
+            display_LLM()  # LLM tab function called without parameters
+        elif selected_tab == "Similarity Analysis":
+            tabs[selected_tab](None)  # Call with None if needed, adjust as necessary
+        elif selected_tab == "Assistant":
+            # Assistant tab functionality here...
+            pass
+        elif df is not None and assignee_rates is not None:
+            # For tabs requiring CSV uploads and processing
+            tabs[selected_tab](df, assignee_rates)
         else:
-            st.warning("Upload files for the selected tab.")
-
-    # Assistant Tab (PDF Upload Functionality)
-    if selected_tab == "Assistant":
-        st.header("Tab 6: Chat with Documents")
-
-        uploaded_files = st.file_uploader(label='Upload PDF files', type=['pdf'], accept_multiple_files=True)
-        if uploaded_files:
-            # Process uploaded PDF files and chat functionality here
-            obj = CustomDataChatbot()
-            obj.setup_qa_chain(uploaded_files)
-            
-            user_query = st.text_input("Ask me anything!")
-
-            if user_query:
-                # Display user input
-                utils.display_msg(user_query, 'user')
-
-                # Send user query to the assistant
-                with st.chat_message("assistant"):
-                    st_cb = StreamHandler(st.empty())
-                    response = obj.qa_chain.run(user_query, callbacks=[st_cb])
-                    st.session_state.messages.append({"role": "assistant", "content": response})
+            st.warning("Please upload files for the selected tab.")
 
 if __name__ == "__main__":
     run_app()
