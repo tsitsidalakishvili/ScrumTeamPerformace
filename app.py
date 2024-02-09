@@ -1531,7 +1531,6 @@ def run_app():
     st.set_page_config(layout='wide')
 
     tabs = {
-    tabs = {
     #"Current Sprint": display_tab5,
     "Team Performance": display_tab2,
     "Individual Performance": display_tab4,
