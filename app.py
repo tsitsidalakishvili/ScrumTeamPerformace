@@ -1537,7 +1537,7 @@ def run_app():
     "Individual Performance": display_tab4,
     "Costs": display_tab1,
     "Productivity & Workload": display_tab3,
-    "LLM": LLM,  # Assuming LLM is a function or module you want to add as a new tab
+    "LLM": display_LLM,  # Assuming LLM is a function or module you want to add as a new tab
     #"Similarity Analysis": Similarity_Analysis,
     #"Assistant": None  # No specific function associated with Assistant tab
 }
