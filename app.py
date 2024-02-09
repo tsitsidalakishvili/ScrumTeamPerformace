@@ -1142,7 +1142,7 @@ def Similarity_Analysis(df):
 
 
 #---------------------------------------------------------------------------------------------------#
-def display_LLM(df, assignee_rates):
+def display_LLM(df=None, assignee_rates=None):
 
     # Streamlit App Layout
     st.title('Connect Data To LLM')
