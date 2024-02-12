@@ -1474,14 +1474,7 @@ def display_LLM(df=None, assignee_rates=None):
         else:
             st.warning("Please enter your query or question before executing the prompt.")
     
-    # Sidebar
-    with st.sidebar:    
-        # Add a link to your LinkedIn profile
-        st.markdown("""
-            <hr style="border:1px solid #f0f2f6;"> <!-- Optional: This adds a horizontal line for visual separation -->
-            Created by <a href="https://www.linkedin.com/in/tsitsi-dalakishvili" target="_blank">Tsitsi Dalakishvili</a>
-            """, unsafe_allow_html=True)
-        
+      
 #---------------------------------------------------------------------------------------------------#
 
 
