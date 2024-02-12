@@ -1143,10 +1143,6 @@ def Similarity_Analysis(df):
 
 #---------------------------------------------------------------------------------------------------#
 def display_LLM(df=None, assignee_rates=None):
-
-    # Streamlit App Layout
-    
-    
     # Streamlit App Layout
     st.title('Connect Data To LLM')
     
@@ -1307,6 +1303,7 @@ def display_LLM(df=None, assignee_rates=None):
         """)
     
     
+    
     # Data Source Management
     if app_mode == 'Manage Data Sources':
         with st.sidebar:
@@ -1355,108 +1352,33 @@ def display_LLM(df=None, assignee_rates=None):
             selected_columns = st.multiselect("Select columns to save for analysis:", st.session_state.data['jira_df'].columns)
             st.session_state.data['selected_columns'] = selected_columns
     
-    elif app_mode == 'Manage Prompts':
+    
+    
+    if app_mode == 'Manage Prompts':
         with st.sidebar:
             openai_api_key = st.text_input('OpenAI API key', type='password')
             if openai_api_key:
                 st.session_state.data['openai_api_key'] = openai_api_key
                 openai.api_key = openai_api_key
     
-        # Display only the selected columns from the saved DataFrame
-        if 'selected_columns' in st.session_state.data and st.session_state.data['selected_columns']:
-            st.write("Selected Columns for Analysis:")
-            st.write(st.session_state.data['selected_columns'])
-            
-            if not st.session_state.data['jira_df'].empty:
-                st.write("Saved DataFrame (Selected Columns):")
-                filtered_df = st.session_state.data['jira_df'][st.session_state.data['selected_columns']]
-                st.dataframe(filtered_df)
-            else:
-                st.write("No DataFrame saved.")
-        else:
-            st.write("No columns selected or DataFrame saved.")
     
-        # UI for adding a new prompt template with explanations
-        with st.expander("View and Add New Prompt Template"):
-            new_prompt_name = st.text_input("Prompt Name:", help="Enter a unique name for your prompt template.")
-            new_instructions = st.text_area("Instructions:", help="Describe the role or persona the language model should assume, including any specific behaviors or knowledge it should exhibit.")
-            new_example_input = st.text_area("Example Input:", help="Provide a sample input that this prompt is designed to handle.")
-            new_example_output = st.text_area("Example Output:", help="Provide a sample output or response that corresponds to the example input.")
-            new_query_template = st.text_area("Query Template:", help="Define the structure of the query to be generated, including placeholders for dynamic variables.")
-            new_few_shot_count = st.slider("Number of Few-Shot Examples", min_value=1, max_value=10, value=3, help="Specify the number of few-shot examples to use for enhancing model performance.")
-            if st.button("Add New Prompt"):
-                add_template(new_prompt_name, new_instructions, new_example_input, new_example_output, new_query_template, new_few_shot_count)
-                st.success("New prompt template added successfully!")
     
-        # Expander for editing an existing prompt template with in-depth explanations
-        with st.expander("Edit Existing Prompt Template"):
+            # Edit existing prompt template
             existing_prompt_names = [tpl['name'] for tpl in st.session_state.data['prompt_templates']]
             selected_template_idx = st.selectbox(
-                "Select a prompt template to edit:", 
+                "Prompt templates:", 
                 range(len(existing_prompt_names)), 
                 format_func=lambda x: existing_prompt_names[x]
             )
             selected_template = st.session_state.data['prompt_templates'][selected_template_idx]
     
-            # Detailed field explanations
-            edited_name = st.text_input(
-                "Edit Prompt Name:", 
-                value=selected_template['name'], 
-                key=f"name_{selected_template_idx}", 
-                help="Provide a concise yet descriptive name. This will help users identify the prompt's purpose at a glance."
-            )
-            edited_instructions = st.text_area(
-                "Edit Instructions:", 
-                value=selected_template['instructions'], 
-                key=f"instructions_{selected_template_idx}", 
-                help="""Detail the intended interaction model or role the AI should assume. For example, 'You are a helpful assistant that provides concise answers.' Be specific about the tone, style, and any constraints the AI should adhere to."""
-            )
-            edited_example_input = st.text_area(
-                "Edit Example Input:", 
-                value=selected_template['example_input'], 
-                key=f"input_{selected_template_idx}", 
-                help="Include a representative input that the prompt is expected to handle. This should illustrate the kind of questions or commands the AI will respond to."
-            )
-            edited_example_output = st.text_area(
-                "Edit Example Output:", 
-                value=selected_template['example_output'], 
-                key=f"output_{selected_template_idx}", 
-                help="Provide an example response that aligns with the instructions and input. Ensure it demonstrates the desired output format and content."
-            )
-            edited_query_template = st.text_area(
-                "Edit Query Template:", 
-                value=selected_template['query_template'], 
-                key=f"template_{selected_template_idx}", 
-                help="""Craft the structure of the query that will be generated. Use placeholders for dynamic parts. For instance, '{user_query}' could be replaced with actual user input during execution."""
-            )
-            edited_few_shot_count = st.slider(
-                "Edit Number of Few-Shot Examples", 
-                min_value=1, 
-                max_value=10, 
-                value=selected_template['few_shot_count'], 
-                key=f"few_shot_{selected_template_idx}", 
-                help="Adjust the number of few-shot examples. Few-shot learning helps the model understand the task by providing examples."
-            )
     
-            if st.button("Save Changes", key=f"save_{selected_template_idx}"):
-                update_template(
-                    selected_template_idx, 
-                    edited_name, 
-                    edited_instructions, 
-                    edited_example_input, 
-                    edited_example_output, 
-                    edited_query_template, 
-                    edited_few_shot_count
-                )
-                st.success("Prompt template updated successfully!")
-        
-        selected_template_idx = st.selectbox("Select an existing prompt template:", range(len(existing_prompt_names)), format_func=lambda x: existing_prompt_names[x])
-        selected_template = st.session_state.data['prompt_templates'][selected_template_idx]
-    
-        # Get user input (query or question)
+        # Execute prompt with user input
         user_input = st.text_input("Enter your query or question:")
+    
         if user_input:  # Check if user has entered any input
             if st.button("Execute Prompt"):
+                selected_template = st.session_state.data['prompt_templates'][selected_template_idx]  # Moved inside the button condition
                 if selected_template:
                     if st.session_state.data['jira_df'].empty:
                         st.warning("No Jira data available. Please fetch Jira issues first.")
@@ -1472,9 +1394,31 @@ def display_LLM(df=None, assignee_rates=None):
                             st.write("Response:")
                             st.write(response)
         else:
-            st.warning("Please enter your query or question before executing the prompt.")
+            st.info("Please enter your query or question before executing the prompt.")
     
-      
+    
+        # Edit functionality under expander
+        with st.expander("Edit Prompt Template"):
+            selected_template = st.session_state.data['prompt_templates'][selected_template_idx]
+            edited_name = st.text_input("Prompt Name:", value=selected_template['name'], key=f"name_{selected_template_idx}", help="Provide a concise yet descriptive name. This will help users identify the prompt's purpose at a glance.")
+            edited_instructions = st.text_area("Instructions:", value=selected_template['instructions'], key=f"instructions_{selected_template_idx}", help="""Detail the intended interaction model or role the AI should assume. For example, 'You are a helpful assistant that provides concise answers.' Be specific about the tone, style, and any constraints the AI should adhere to.""")
+            edited_example_input = st.text_area("Example Input:", value=selected_template['example_input'], key=f"input_{selected_template_idx}", help="Include a representative input that the prompt is expected to handle. This should illustrate the kind of questions or commands the AI will respond to.")
+            edited_example_output = st.text_area("Example Output:", value=selected_template['example_output'], key=f"output_{selected_template_idx}", help="Provide an example response that aligns with the instructions and input. Ensure it demonstrates the desired output format and content.")
+            edited_query_template = st.text_area("Query Template:", value=selected_template['query_template'], key=f"template_{selected_template_idx}", help="""Craft the structure of the query that will be generated. Use placeholders for dynamic parts. For instance, '{user_query}' could be replaced with actual user input during execution.""")
+            edited_few_shot_count = st.slider("Number of Few-Shot Examples", min_value=1, max_value=10, value=selected_template['few_shot_count'], key=f"few_shot_{selected_template_idx}", help="Adjust the number of few-shot examples. Few-shot learning helps the model understand the task by providing examples.")
+    
+            if st.button("Save Changes", key=f"save_{selected_template_idx}"):
+                update_template(selected_template_idx, edited_name, edited_instructions, edited_example_input, edited_example_output, edited_query_template, edited_few_shot_count)
+                st.success("Prompt template updated successfully!")
+    
+    # Sidebar
+    with st.sidebar:    
+        # Add a link to your LinkedIn profile
+        st.markdown("""
+            <hr style="border:1px solid #f0f2f6;"> <!-- Optional: This adds a horizontal line for visual separation -->
+            Created by <a href="https://www.linkedin.com/in/tsitsi-dalakishvili" target="_blank">Tsitsi Dalakishvili</a>
+            """, unsafe_allow_html=True)
+  
 #---------------------------------------------------------------------------------------------------#
 
 
