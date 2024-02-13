@@ -447,20 +447,22 @@ def display_tab1(df, assignee_rates):
     # Display the filtered DataFrame as a table
     filtered_df = pd.DataFrame(filtered_df)
 
-    # After displaying the data table
+
+    # Display the filtered DataFrame as a table
     st.dataframe(filtered_df)
 
+    # Create a container for the download button
+    with st.container():
         # Convert DataFrame to CSV
-        csv = to_csv(filtered_df)
-        b64 = base64.b64encode(csv.encode()).decode()  # some browsers need base64 encoding
-    
-        # Create download button
+        csv = filtered_df.to_csv(index=False).encode('utf-8')
         st.download_button(
             label="Download data as CSV",
-            data=b64,
+            data=csv,
             file_name='data.csv',
             mime='text/csv',
+            key='download-csv'
         )
+
 
 #-----------------------------------------------------------------------------------------------------------------------#
 
