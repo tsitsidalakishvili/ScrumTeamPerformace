@@ -1465,14 +1465,7 @@ def display_LLM(df=None, assignee_rates=None):
                 update_template(selected_template_idx, edited_name, edited_instructions, edited_example_input, edited_example_output, edited_query_template, edited_few_shot_count)
                 st.success("Prompt template updated successfully!")
     
-    # Sidebar
-    with st.sidebar:    
-        # Add a link to your LinkedIn profile
-        st.markdown("""
-            <hr style="border:1px solid #f0f2f6;"> <!-- Optional: This adds a horizontal line for visual separation -->
-            Created by <a href="https://www.linkedin.com/in/tsitsi-dalakishvili" target="_blank">Tsitsi Dalakishvili</a>
-            """, unsafe_allow_html=True)
-  
+
 #---------------------------------------------------------------------------------------------------#
 
 
