@@ -214,10 +214,27 @@ def merge_data(Iterative, Eigen, sprint_bins):
     grouped_df['Sprint'] = grouped_df['Created'].apply(lambda x: get_sprint(x, sprint_bins))
     return grouped_df
 
+def read_json_files(uploaded_file_iterative, uploaded_file_eigen):
+    try:
+        Iterative = pd.read_json(uploaded_file_iterative, lines=True)  # Assuming the JSON is in a line-delimited format
+        Eigen = pd.read_json(uploaded_file_eigen, lines=True)  # Adjust the parameters if your JSON format is different
+        return Iterative, Eigen
+    except Exception as e:
+        st.warning(f"Error reading the files: {e}")
+        return None, None
+
 
 def load_data(uploaded_file_iterative, uploaded_file_eigen, sprint_bins):
     if uploaded_file_iterative is not None and uploaded_file_eigen is not None:
-        Iterative, Eigen = read_csv_files(uploaded_file_iterative, uploaded_file_eigen)
+        # Determine the file type by extension
+        if uploaded_file_iterative.name.endswith('.csv') and uploaded_file_eigen.name.endswith('.csv'):
+            Iterative, Eigen = read_csv_files(uploaded_file_iterative, uploaded_file_eigen)
+        elif uploaded_file_iterative.name.endswith('.json') and uploaded_file_eigen.name.endswith('.json'):
+            Iterative, Eigen = read_json_files(uploaded_file_iterative, uploaded_file_eigen)
+        else:
+            st.error("Unsupported file format. Please upload either CSV or JSON files.")
+            return None
+
         if Iterative is not None and Eigen is not None:
             Iterative, Eigen = preprocess___data(Iterative, Eigen)
             if Iterative is not None and Eigen is not None:
@@ -226,12 +243,23 @@ def load_data(uploaded_file_iterative, uploaded_file_eigen, sprint_bins):
                 # Save DataFrame to CSV
                 csv_data = df.to_csv(index=False)
                 
-                # Add download button
+                # Add download button for CSV
                 st.sidebar.download_button(
-                    label="Download processed data table",
+                    label="Download processed data table as CSV",
                     data=csv_data,
                     file_name='preprocessed_data.csv',
                     mime='text/csv'
+                )
+                
+                # Save DataFrame to JSON
+                json_data = to_json(df)
+                
+                # Add download button for JSON
+                st.sidebar.download_button(
+                    label="Download processed data table as JSON",
+                    data=json_data,
+                    file_name='preprocessed_data.json',
+                    mime='application/json'
                 )
 
                 return df
@@ -240,7 +268,7 @@ def load_data(uploaded_file_iterative, uploaded_file_eigen, sprint_bins):
         else:
             return None
     else:
-        st.warning("Please upload both CSV files to proceed!")
+        st.warning("Please upload both files to proceed!")
         return None
 
 #-------------------------------------------------------------------------------------------------------------------------------------#
