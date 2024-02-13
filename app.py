@@ -1143,6 +1143,7 @@ def Similarity_Analysis(df):
 
 #---------------------------------------------------------------------------------------------------#
 def display_LLM(df=None, assignee_rates=None):
+        
     # Streamlit App Layout
     st.title('Connect Data To LLM')
     
@@ -1155,6 +1156,7 @@ def display_LLM(df=None, assignee_rates=None):
             'selected_columns': []
         }
     
+    # Function to initialize default prompt templates
     # Function to initialize default prompt templates
     def initialize_default_prompt_templates():
         templates = [
@@ -1188,6 +1190,7 @@ def display_LLM(df=None, assignee_rates=None):
         st.session_state.data['prompt_templates'] = templates if not st.session_state.data['prompt_templates'] else st.session_state.data['prompt_templates']
     
     initialize_default_prompt_templates()
+    
     
     # JIRA Utility Functions
     @st.cache(suppress_st_warning=False, allow_output_mutation=True)
@@ -1248,21 +1251,36 @@ def display_LLM(df=None, assignee_rates=None):
         few_shot_examples = "\n".join([f"Example Input: {template['example_input']}\nExample Output: {template['example_output']}" for _ in range(template['few_shot_count'])])
         return f"{template['instructions']}\n{few_shot_examples}\n{template['query_template']}\n\n{actual_input}"
     
-    # Execute Prompt Function
-    def execute_prompt(template, test_input, data):
+    def execute_prompt(template, test_input, data, selected_columns):
         try:
-            full_prompt = f"{template}\n\n{test_input}\n\n{data}"
+            # Filter the data to include only the selected columns
+            if selected_columns:
+                data_df = pd.read_json(data)
+                filtered_data = data_df[selected_columns].to_json()
+            else:
+                filtered_data = data
+    
+            full_prompt = f"{template}\n\n{test_input}\n\n{filtered_data}"
+    
+            # Split the full_prompt into segments of appropriate length
             segments = [full_prompt[i:i+4096] for i in range(0, len(full_prompt), 4096)]
+    
             responses = []
+    
             for segment in segments:
                 response = openai.ChatCompletion.create(
                     model="gpt-3.5-turbo",
                     messages=[{"role": "system", "content": segment}]
                 )
                 responses.append(response.choices[0].message['content'])
+    
             return " ".join(responses)
         except Exception as e:
             return f"Error: {e}"
+        
+    
+    
+    
     
     # Sidebar for User Input and Mode Selection
     with st.sidebar:
@@ -1361,16 +1379,31 @@ def display_LLM(df=None, assignee_rates=None):
                 st.session_state.data['openai_api_key'] = openai_api_key
                 openai.api_key = openai_api_key
     
+        # Display only the selected columns from the saved DataFrame
+        if 'selected_columns' in st.session_state.data and st.session_state.data['selected_columns']:
+            st.write("Selected Columns for Analysis:")
+            st.write(st.session_state.data['selected_columns'])
+            
+            if not st.session_state.data['jira_df'].empty or not st.session_state.data['neo4j_df'].empty:
+                st.write("Saved DataFrame (Selected Columns):")
+                # Determine which DataFrame to use based on what's available
+                data_source_df = st.session_state.data['jira_df'] if not st.session_state.data['jira_df'].empty else st.session_state.data['neo4j_df']
+                # Filter the DataFrame to only include the selected columns
+                filtered_df = data_source_df[st.session_state.data['selected_columns']]
+                st.dataframe(filtered_df)
+            else:
+                st.write("No DataFrame saved.")
+        else:
+            st.write("No columns selected or DataFrame saved.")
     
-    
-            # Edit existing prompt template
-            existing_prompt_names = [tpl['name'] for tpl in st.session_state.data['prompt_templates']]
-            selected_template_idx = st.selectbox(
-                "Prompt templates:", 
-                range(len(existing_prompt_names)), 
-                format_func=lambda x: existing_prompt_names[x]
-            )
-            selected_template = st.session_state.data['prompt_templates'][selected_template_idx]
+        # Edit existing prompt template
+        existing_prompt_names = [tpl['name'] for tpl in st.session_state.data['prompt_templates']]
+        selected_template_idx = st.selectbox(
+            "Prompt templates:", 
+            range(len(existing_prompt_names)), 
+            format_func=lambda x: existing_prompt_names[x]
+        )
+        selected_template = st.session_state.data['prompt_templates'][selected_template_idx]
     
     
         # Execute prompt with user input
