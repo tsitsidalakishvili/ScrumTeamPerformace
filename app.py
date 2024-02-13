@@ -445,6 +445,7 @@ def display_tab1(df, assignee_rates):
     # Filter the DataFrame based on the search input
     filtered_df = df[df.apply(lambda row: search_value.lower() in str(row).lower(), axis=1)] if search_value else df
     # Display the filtered DataFrame as a table
+    filtered_df = pd.DataFrame(filtered_df)
 
     # After displaying the data table
     st.dataframe(filtered_df)
