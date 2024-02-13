@@ -43,6 +43,13 @@ def to_csv(df):
     processed_data = output.getvalue().decode()
     return processed_data
 
+
+def to_json(df):
+    # Convert DataFrame to JSON string
+    json_str = df.to_json(orient='records', lines=True)
+    return json_str
+
+
 def read_csv_files(uploaded_file_iterative, uploaded_file_eigen):
     try:
         Iterative = pd.read_csv(uploaded_file_iterative, encoding='iso-8859-1')
@@ -460,6 +467,17 @@ def display_tab1(df, assignee_rates):
             file_name='data.csv',
             mime='text/csv',
             key='download-csv'
+        )
+
+    # Create a container for the download button
+    with st.container():
+        # Convert DataFrame to Json
+        json_data = to_json(filtered_df)
+        st.download_button(
+            label="Download data as JSON",
+            data=json_data,
+            file_name='processed_data.json',
+            mime='application/json'
         )
 
 
