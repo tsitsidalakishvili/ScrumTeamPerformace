@@ -441,6 +441,19 @@ def display_tab1(df, assignee_rates):
     filtered_df = df[df.apply(lambda row: search_value.lower() in str(row).lower(), axis=1)] if search_value else df
     # Display the filtered DataFrame as a table
     st.dataframe(filtered_df)
+
+    # Add download button after displaying the table
+    csv_data = filtered_df.to_csv(index=False)
+    st.download_button(
+        label="Download CSV",
+        data=csv_data,
+        file_name='filtered_data.csv',
+        mime='text/csv',
+        key='download_button'
+    )
+
+
+
 #-----------------------------------------------------------------------------------------------------------------------#
 
 def calculate_average_ratio_by_project(df):
