@@ -450,17 +450,17 @@ def display_tab1(df, assignee_rates):
     # After displaying the data table
     st.dataframe(filtered_df)
 
-    # Convert DataFrame to CSV
-    csv = to_csv(filtered_df)
-    b64 = base64.b64encode(csv.encode()).decode()  # some browsers need base64 encoding
-
-    # Create download button
-    st.download_button(
-        label="Download data as CSV",
-        data=b64,
-        file_name='data.csv',
-        mime='text/csv',
-    )
+        # Convert DataFrame to CSV
+        csv = to_csv(filtered_df)
+        b64 = base64.b64encode(csv.encode()).decode()  # some browsers need base64 encoding
+    
+        # Create download button
+        st.download_button(
+            label="Download data as CSV",
+            data=b64,
+            file_name='data.csv',
+            mime='text/csv',
+        )
 
 #-----------------------------------------------------------------------------------------------------------------------#
 
