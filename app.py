@@ -221,7 +221,7 @@ def load_data(uploaded_file_iterative, uploaded_file_eigen, sprint_bins):
                 
                 # Add download button
                 st.sidebar.download_button(
-                    label="Download CSV",
+                    label="Download processed data table",
                     data=csv_data,
                     file_name='preprocessed_data.csv',
                     mime='text/csv'
