@@ -1570,7 +1570,7 @@ def run_app():
     if selected_tab in tabs:
         if selected_tab == "LLM":
             display_LLM()  # LLM tab function called without parameters
-        elif selected_tab == "Similarity Analysis":
+        elif selected_tab == "Similarity":
             tabs[selected_tab](None)  # Call with None if needed, adjust as necessary
         elif selected_tab == "Assistant":
             # Assistant tab functionality here...
