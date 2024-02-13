@@ -29,13 +29,20 @@ from io import BytesIO
 import os
 import streamlit as st
 import pandas as pd
-
+import base64
+from io import BytesIO
 
 
 # Download stopwords if not already downloaded
 nltk.download('stopwords')
 
 
+
+def to_csv(df):
+    output = BytesIO()
+    df.to_csv(output, index=False)
+    processed_data = output.getvalue().decode()
+    return processed_data
 
 def read_csv_files(uploaded_file_iterative, uploaded_file_eigen):
     try:
@@ -438,13 +445,21 @@ def display_tab1(df, assignee_rates):
     # Filter the DataFrame based on the search input
     filtered_df = df[df.apply(lambda row: search_value.lower() in str(row).lower(), axis=1)] if search_value else df
     # Display the filtered DataFrame as a table
+
+    # After displaying the data table
     st.dataframe(filtered_df)
 
-    # Add download button after displaying the table
-    csv_data = filtered_df.to_csv(index=False)
-    st.file_download(csv_data, label="Download CSV", file_name='filtered_data.csv')
+    # Convert DataFrame to CSV
+    csv = to_csv(filtered_df)
+    b64 = base64.b64encode(csv.encode()).decode()  # some browsers need base64 encoding
 
-
+    # Create download button
+    st.download_button(
+        label="Download data as CSV",
+        data=b64,
+        file_name='data.csv',
+        mime='text/csv',
+    )
 
 #-----------------------------------------------------------------------------------------------------------------------#
 
