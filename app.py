@@ -1191,7 +1191,6 @@ def display_LLM(df=None, assignee_rates=None):
         }
     
     # Function to initialize default prompt templates
-    # Function to initialize default prompt templates
     def initialize_default_prompt_templates():
         templates = [
             {
@@ -1543,7 +1542,8 @@ def run_app():
         "Individual Performance": display_tab4,
         "Costs": display_tab1,
         "Productivity & Workload": display_tab3,
-        "LLM": display_LLM,  # LLM function does not require df and assignee_rates
+        "LLM": display_LLM,  
+        "Similarity": Similarity_Analysis,
     }
 
     # Get user selection
@@ -1556,7 +1556,7 @@ def run_app():
     assignee_rates = None
 
     # Conditional loading for tabs that require CSV file uploads
-    if selected_tab not in ["LLM", "Similarity Analysis", "Assistant"]:  # Add other tabs that don't require CSV uploads as necessary
+    if selected_tab not in ["LLM", "Similarity", "Assistant"]:  # Add other tabs that don't require CSV uploads as necessary
         with st.sidebar.expander("Upload Files"):
             uploaded_file_iterative = st.file_uploader("Choose Iterative CSV file", type="csv")
             uploaded_file_eigen = st.file_uploader("Choose Eigen CSV file", type="csv")
