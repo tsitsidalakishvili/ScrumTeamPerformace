@@ -32,7 +32,6 @@ import pandas as pd
 import base64
 from io import BytesIO
 
-
 # Download stopwords if not already downloaded
 nltk.download('stopwords')
 
@@ -221,7 +220,7 @@ def load_data(uploaded_file_iterative, uploaded_file_eigen, sprint_bins):
                 csv_data = df.to_csv(index=False)
                 
                 # Add download button
-                st.download_button(
+                st.sidebar.download_button(
                     label="Download CSV",
                     data=csv_data,
                     file_name='preprocessed_data.csv',
