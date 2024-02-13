@@ -209,6 +209,18 @@ def load_data(uploaded_file_iterative, uploaded_file_eigen, sprint_bins):
             Iterative, Eigen = preprocess___data(Iterative, Eigen)
             if Iterative is not None and Eigen is not None:
                 df = merge_data(Iterative, Eigen, sprint_bins)
+                
+                # Save DataFrame to CSV
+                csv_data = df.to_csv(index=False)
+                
+                # Add download button
+                st.download_button(
+                    label="Download CSV",
+                    data=csv_data,
+                    file_name='preprocessed_data.csv',
+                    mime='text/csv'
+                )
+
                 return df
             else:
                 return None
