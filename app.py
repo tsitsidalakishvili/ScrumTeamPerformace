@@ -209,6 +209,10 @@ def load_data(uploaded_file_iterative, uploaded_file_eigen, sprint_bins):
             Iterative, Eigen = preprocess___data(Iterative, Eigen)
             if Iterative is not None and Eigen is not None:
                 df = merge_data(Iterative, Eigen, sprint_bins)
+                
+                # Save the DataFrame to a CSV file
+                df.to_csv('preprocessed_data.csv', index=False)  # Change the filename as desired
+                
                 return df
             else:
                 return None
@@ -217,6 +221,7 @@ def load_data(uploaded_file_iterative, uploaded_file_eigen, sprint_bins):
     else:
         st.warning("Please upload both CSV files to proceed!")
         return None
+
 
 #-------------------------------------------------------------------------------------------------------------------------------------#
 
