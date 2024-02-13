@@ -330,7 +330,6 @@ def display_tab1(df, assignee_rates):
     df['Work date'] = pd.to_datetime(df['Work date'], infer_datetime_format=True)
     df['Cost'] = df['Hours'] * df['Assignee'].map(assignee_rates)
 
-
     epic_cost_data = df.groupby(['Epic', 'CoreTimeClient'])['Cost'].sum().reset_index()
     epic_sum_data = epic_cost_data.groupby('Epic')['Cost'].sum().reset_index()
     epic_hours_fig = px.bar(
@@ -421,8 +420,7 @@ def display_tab1(df, assignee_rates):
         title='Weekly Cost by Client'
     )
 
-
-    # Outer container# Outer container
+    # Outer container
     outer_container = st.container()
     
     with outer_container:
@@ -444,13 +442,7 @@ def display_tab1(df, assignee_rates):
 
     # Add download button after displaying the table
     csv_data = filtered_df.to_csv(index=False)
-    st.download_button(
-        label="Download CSV",
-        data=csv_data,
-        file_name='filtered_data.csv',
-        mime='text/csv',
-        key='download_button'
-    )
+    st.file_download(csv_data, label="Download CSV", file_name='filtered_data.csv')
 
 
 
