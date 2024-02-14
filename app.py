@@ -1165,7 +1165,7 @@ def Similarity_Analysis(df):
 
 #---------------------------------------------------------------------------------------------------#
 def display_LLM(df=None, assignee_rates=None):
-        
+    
     # Streamlit App Layout
     st.title('Connect Data To LLM')
     
@@ -1179,6 +1179,7 @@ def display_LLM(df=None, assignee_rates=None):
         }
     
     # Function to initialize default prompt templates
+    # Function to initialize default prompt templates
     def initialize_default_prompt_templates():
         templates = [
             {
@@ -1187,6 +1188,15 @@ def display_LLM(df=None, assignee_rates=None):
                 "example_input": "Provide a detailed report on issue KEY-123.",
                 "example_output": "Issue KEY-123, titled [Summary], is currently [Status]. The latest update was on [Updated], with [Comment count] comments, and the last comment: [Latest Comment]. There are [Blocker count] blockers impeding progress, with the main dependency on [Dependency Key].",
                 "query_template": "Provide a detailed report on issue {issue_key}.",
+                "few_shot_count": 3
+            },
+    
+            {
+                "name": "Analyze",
+                "instructions": "Analyze selected columns from Jira text data to identify patterns, similarities, and inefficiencies. Provide insights into repetitive tasks and potential areas for process optimization.",
+                "example_input": "Analyze the impact and frequency of issues related to 'Network Connectivity' over the last quarter.",
+                "example_output": "The analysis reveals that 'Network Connectivity' issues have increased by 25% over the last quarter, with most incidents reported during peak usage hours, suggesting a need for infrastructure scaling.",
+                "query_template": "Analyze {issue_topic} issues over the last {time_period}.",
                 "few_shot_count": 3
             },
             # New Template: Resource Allocation
@@ -1465,7 +1475,13 @@ def display_LLM(df=None, assignee_rates=None):
                 update_template(selected_template_idx, edited_name, edited_instructions, edited_example_input, edited_example_output, edited_query_template, edited_few_shot_count)
                 st.success("Prompt template updated successfully!")
     
-
+    # Sidebar
+    with st.sidebar:    
+        # Add a link to your LinkedIn profile
+        st.markdown("""
+            <hr style="border:1px solid #f0f2f6;"> <!-- Optional: This adds a horizontal line for visual separation -->
+            Created by <a href="https://www.linkedin.com/in/tsitsi-dalakishvili" target="_blank">Tsitsi Dalakishvili</a>
+            """, unsafe_allow_html=True)
 #---------------------------------------------------------------------------------------------------#
 
 
