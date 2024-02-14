@@ -44,10 +44,6 @@ def to_csv(df):
     return processed_data
 
 
-def to_json(df):
-    # Convert DataFrame to JSON string
-    json_str = df.to_json(orient='records', lines=True)
-    return json_str
 
 
 def read_csv_files(uploaded_file_iterative, uploaded_file_eigen):
@@ -251,16 +247,6 @@ def load_data(uploaded_file_iterative, uploaded_file_eigen, sprint_bins):
                     mime='text/csv'
                 )
                 
-                # Save DataFrame to JSON
-                json_data = to_json(df)
-                
-                # Add download button for JSON
-                st.sidebar.download_button(
-                    label="Download processed data table as JSON",
-                    data=json_data,
-                    file_name='preprocessed_data.json',
-                    mime='application/json'
-                )
 
                 return df
             else:
