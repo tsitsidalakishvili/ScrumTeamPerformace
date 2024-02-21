@@ -574,11 +574,7 @@ def display_tab2(df, assignee_rates):
     # Calculate the average ratio as story points divided by days for each sprint
     sprint_totals['Avg_Ratio'] = sprint_totals['Story Points'] / sprint_totals['days']
 
-    # Conversion of 'Sprint' column to int for correct sorting, if they are not already integers
-    sprint_totals['Sprint'] = sprint_totals['Sprint'].astype(int)
-    
-    # Sorting 'sprint_totals' DataFrame by 'Sprint' in ascending order
-    sprint_totals = sprint_totals.sort_values('Sprint').reset_index(drop=True)
+
     
     # Using the sorted 'sprint_totals' DataFrame for plotting the Team Average Ratio by Sprint
     fig2 = go.Figure()
