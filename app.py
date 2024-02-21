@@ -574,13 +574,13 @@ def display_tab2(df, assignee_rates):
     # Calculate the average ratio as story points divided by days for each sprint
     sprint_totals['Avg_Ratio'] = sprint_totals['Story Points'] / sprint_totals['days']
 
+    # Conversion of 'Sprint' column to int for correct sorting, if they are not already integers
     sprint_totals['Sprint'] = sprint_totals['Sprint'].astype(int)
     
-    # Sort 'sprint_totals' by 'Sprint' in ascending order
+    # Sorting 'sprint_totals' DataFrame by 'Sprint' in ascending order
     sprint_totals = sprint_totals.sort_values('Sprint').reset_index(drop=True)
-
     
-    # Then, use the sprint_totals DataFrame for plotting the Team Average Ratio by Sprint
+    # Using the sorted 'sprint_totals' DataFrame for plotting the Team Average Ratio by Sprint
     fig2 = go.Figure()
     fig2.add_trace(go.Scatter(
         x=sprint_totals['Sprint'],
@@ -589,17 +589,16 @@ def display_tab2(df, assignee_rates):
         marker=dict(size=8),
         line=dict(width=2),
     ))
-
-
-
+    
     # Update layout for the line chart
     fig2.update_layout(
-        title='Team Average Ratio by Sprint',  # Add title for the line chart
+        title='Team Average Ratio by Sprint',
         xaxis=dict(title='Sprint'),
         yaxis=dict(title='Average Ratio'),
         height=500,
         margin=dict(l=100, r=100, t=100, b=100),
     )
+
 
 
     avg_ratio_assignee_phase = df.groupby(['Assignee', 'CoreTimePhase'])['Avg_Ratio'].mean().reset_index()
