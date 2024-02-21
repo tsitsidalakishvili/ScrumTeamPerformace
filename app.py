@@ -90,7 +90,7 @@ sprint_bins = [(pd.to_datetime(start), pd.to_datetime(end)) for start, end in sp
 def get_sprint(date, sprint_bins):
     for i, (start_date, end_date) in enumerate(sprint_bins):
         if start_date <= date <= end_date:
-            return f"Sprint {80 + i}"
+            return f"Sprint {81 + i}"
     return None
 
 
