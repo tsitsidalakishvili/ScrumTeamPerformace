@@ -558,6 +558,27 @@ def generate_word_cloud_from_file(file_path):
 
 
 def display_tab2(df, assignee_rates):
+    # Assume 'sprint_bins' is accessible here, mapping sprints to their numeric order
+    sprint_order = {f"Sprint {80 + i}": i for i, _ in enumerate(sprint_bins)}
+    
+    # Apply the sprint order to the DataFrame
+    df['Sprint_Order'] = df['Sprint'].map(sprint_order)
+    
+    # Sort DataFrame by this new order for plotting
+    df = df.sort_values(by='Sprint_Order')
+    
+    # Filter the DataFrame to only include rows where 'Status' is 'Done'
+    done_df = df[df['Status'] == 'Done']
+    
+    # Group by 'Sprint' and aggregate based on the 'Story Points' and 'days' columns
+    sprint_summary = done_df.groupby('Sprint').agg({'Story Points': 'sum', 'days': 'sum'}).reset_index()
+
+    # Calculate the total story points and total days for each sprint
+    sprint_totals = df.groupby('Sprint').agg({'Story Points': 'sum', 'days': 'sum'}).reset_index()
+
+    # Calculate the average ratio as story points divided by days for each sprint
+    sprint_totals['Avg_Ratio'] = sprint_totals['Story Points'] / sprint_totals['days']
+
     # Remove whitespace from column names (if any)
     df.columns = df.columns.str.strip()
 
@@ -567,12 +588,6 @@ def display_tab2(df, assignee_rates):
     # Group by 'Sprint' and aggregate based on the 'Story Points' and 'days' columns
     sprint_summary = done_df.groupby('Sprint').agg({'Story Points': 'sum', 'days': 'sum'}).reset_index()
 
-
-        # Calculate the total story points and total days for each sprint
-    sprint_totals = df.groupby('Sprint').agg({'Story Points': 'sum', 'days': 'sum'}).reset_index()
-
-    # Calculate the average ratio as story points divided by days for each sprint
-    sprint_totals['Avg_Ratio'] = sprint_totals['Story Points'] / sprint_totals['days']
 
 
     
