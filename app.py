@@ -1546,6 +1546,7 @@ DEFAULT_RATES = {
 
 def run_app():
     st.set_page_config(layout='wide')
+    df = None  # Initialize df within run_app function for proper scope
 
     # Define tabs dictionary
     tabs = {
@@ -1594,12 +1595,8 @@ def run_app():
 
 
 
-if __name__ == "__main__":
-    df = None  # Initialize df as None or outside the if __name__ == "__main__": block
-    run_app()
-
-    # After running run_app(), check if df exists and is not None
     if df is not None:
+        # Assuming df has been properly loaded and processed at this point
         # Now that df is confirmed to exist, it's safe to convert to JSON and provide download link
         json_data = to_json(df)
         st.sidebar.download_button(
@@ -1608,3 +1605,7 @@ if __name__ == "__main__":
             file_name='processed_data.json',
             mime='application/json'
         )
+
+# Ensure the run_app function is called to execute the app
+if __name__ == "__main__":
+    run_app()
