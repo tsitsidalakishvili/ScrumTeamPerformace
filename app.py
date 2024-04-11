@@ -893,7 +893,7 @@ def display_tab4(df, assignee_rates):
         df,
         x='Assignee',
         y='Assignee Capacity',
-        title='Assignee's Sprint Capacity: Story Point Potential per Sprint'
+        title='Assignee Sprint Capacity: Story Point Potential per Sprint'
     )
 
     # Add data labels to the box plot for individual data points only
