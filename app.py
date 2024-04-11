@@ -648,7 +648,7 @@ def display_tab2(df, assignee_rates):
 
     # Update layout for the Radar Chart
     fig3.update_layout(
-        title='Average Ratio by Assignee and Core Time Phase',  # Add title for the radar chart
+        title='Performance by Phases: Assignee's Peak Delivery Times',  # Add title for the radar chart
         polar=dict(
             radialaxis=dict(
                 title='Average Ratio',
@@ -893,7 +893,7 @@ def display_tab4(df, assignee_rates):
         df,
         x='Assignee',
         y='Assignee Capacity',
-        title='Assignee Capacity in Sprint'
+        title='Assignee's Sprint Capacity: Story Point Potential per Sprint'
     )
 
     # Add data labels to the box plot for individual data points only
@@ -920,7 +920,7 @@ def display_tab4(df, assignee_rates):
         color='Issue Type',
         barmode='group',
         color_discrete_map=color_map,
-        title='Average Ratio by Issue Type and Assignee'
+        title='Issue-Type Delivery Insights: Daily Story Points per Assignee'
     )
 
     avg_ratio_chart.update_traces(texttemplate='%{value:.2f}', textposition='inside')
@@ -931,7 +931,7 @@ def display_tab4(df, assignee_rates):
         x='Sprint',
         y='Avg_Ratio',
         color='Assignee',
-        title='Average Ratio by Sprint and Assignee'
+        title='Trend Analysis: Assignee Story Point Delivery Over Sprints'
     )
 
     # Outer container
