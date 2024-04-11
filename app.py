@@ -294,15 +294,14 @@ def display_assignee_rates(assignee_rates):
     """
     for assignee, rate in assignee_rates.items():
         st.sidebar.write(f"Rate for Assignee {assignee}: {rate}")
-# Assuming `df` is your DataFrame variable
-json_data = to_json(df)
 
-st.sidebar.download_button(
-    label="Download processed data as JSON",
-    data=json_data,
-    file_name='processed_data.json',
-    mime='application/json'
-)
+
+
+
+
+
+
+
 
 def update_chart_layout(chart, title, height=None, width=None):
     """
@@ -1593,5 +1592,19 @@ def run_app():
         else:
             st.warning("Please upload files for the selected tab.")
 
+
+
 if __name__ == "__main__":
+    df = None  # Initialize df as None or outside the if __name__ == "__main__": block
     run_app()
+
+    # After running run_app(), check if df exists and is not None
+    if df is not None:
+        # Now that df is confirmed to exist, it's safe to convert to JSON and provide download link
+        json_data = to_json(df)
+        st.sidebar.download_button(
+            label="Download processed data as JSON",
+            data=json_data,
+            file_name='processed_data.json',
+            mime='application/json'
+        )
