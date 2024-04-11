@@ -880,7 +880,7 @@ def display_tab4(df, assignee_rates):
     avg_ratio_assignee_phase = df.groupby(['Assignee', 'CoreTimePhase'])['Avg_Ratio'].mean().reset_index()
     radar_chart_assignee_phase = px.line_polar(avg_ratio_assignee_phase, r='Avg_Ratio', theta='CoreTimePhase',
                                                line_close=True,
-                                               title='Average Ratio by Assignee and Core Time Phase',
+                                               title='Performance Phases - Assignee Peak Delivery Times',
                                                labels={'Avg_Ratio': 'Average Ratio', 'CoreTimePhase': 'Core Time Phase'},
                                                color='Assignee')
 
