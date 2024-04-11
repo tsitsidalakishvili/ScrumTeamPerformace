@@ -648,7 +648,7 @@ def display_tab2(df, assignee_rates):
 
     # Update layout for the Radar Chart
     fig3.update_layout(
-        title="Performance by Phases Assignee's Peak Delivery Times",  # Add title for the radar chart
+        title='Performance by Phases Assignee Peak Delivery Times',  # Add title for the radar chart
         polar=dict(
             radialaxis=dict(
                 title='Average Ratio',
