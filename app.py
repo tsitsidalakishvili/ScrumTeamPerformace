@@ -35,6 +35,17 @@ from io import BytesIO
 # Download stopwords if not already downloaded
 nltk.download('stopwords')
 
+def to_json(df):
+    """
+    Converts a DataFrame to a JSON string.
+    
+    Parameters:
+    - df (pandas.DataFrame): The DataFrame to convert.
+    
+    Returns:
+    - str: The JSON string.
+    """
+    return df.to_json(orient='records', lines=True)
 
 
 def to_csv(df):
@@ -283,6 +294,15 @@ def display_assignee_rates(assignee_rates):
     """
     for assignee, rate in assignee_rates.items():
         st.sidebar.write(f"Rate for Assignee {assignee}: {rate}")
+# Assuming `df` is your DataFrame variable
+json_data = to_json(df)
+
+st.sidebar.download_button(
+    label="Download processed data as JSON",
+    data=json_data,
+    file_name='processed_data.json',
+    mime='application/json'
+)
 
 def update_chart_layout(chart, title, height=None, width=None):
     """
