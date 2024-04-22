@@ -622,7 +622,7 @@ def display_tab2(df, assignee_rates):
     
     # Update layout for the line chart
     fig2.update_layout(
-        title='Team Average Ratio by Sprint',
+        title='Team Daily Story Points delivered by Sprint',
         xaxis=dict(title='Sprint'),
         yaxis=dict(title='Average Ratio'),
         height=500,
