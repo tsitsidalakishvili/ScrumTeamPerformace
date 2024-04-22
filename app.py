@@ -537,7 +537,7 @@ def create_cfd_chart(avg_ratio_by_project):
 
     # Update the chart layout and styling
     cfd_chart.update_layout(
-        title='Team Average Daily Delivered Story Points by CoreTimeProject',
+        title='Daily Delivered Story Points by CoreTime Project',
         xaxis=dict(title='CoreTimeProject'),
         yaxis=dict(title='Average Ratio'),
         font=dict(color='black')
@@ -622,7 +622,7 @@ def display_tab2(df, assignee_rates):
     
     # Update layout for the line chart
     fig2.update_layout(
-        title='Daily Story Points delivered by Team in Sprints',
+        title='Daily Story Points delivered by Sprints',
         xaxis=dict(title='Sprint'),
         yaxis=dict(title='Average Ratio'),
         height=500,
