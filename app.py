@@ -807,7 +807,7 @@ def display_tab3(df, assignee_rates):
         color='CoreTimeProject',
         labels={'days': 'Spent days', 'Story Points': 'Delivered Story Points'},
         hover_data=['Hours'],
-        title='Spent days vs. Delivered Story Points by Project'
+        title='Most Productive Projects - Spent days vs. Delivered Story Points'
     )
 
     # Create a scatter plot: Story Points by Project, Assignee, and Sprint
@@ -821,7 +821,7 @@ def display_tab3(df, assignee_rates):
         color='Assignee',
         labels={'Project name': 'Project Name', 'Assignee': 'Assignee', 'Sprint': 'Sprint', 'Story Points': 'Story Points'},
         size_max=60,
-        title='Story Points by Project, Assignee, and Sprint'
+        title='Contribution in Projects by Sprint'
     )
 
         # Display the charts in two columns
