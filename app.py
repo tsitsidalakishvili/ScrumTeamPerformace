@@ -726,7 +726,7 @@ def display_tab2(df, assignee_rates):
 
 
     # Create a box plot to visualize the distribution of story points by assignee
-    box_plot = px.box(df, x='Assignee', y='Story Points', title='The most frequent size of issues by Assignee')
+    box_plot = px.box(df, x='Assignee', y='Story Points', title='The Most Frequent Size of Issues by Assignee')
 
     # Customize the box plot appearance
     box_plot.update_traces(marker=dict(size=5))
