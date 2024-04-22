@@ -828,12 +828,9 @@ def display_tab3(df, assignee_rates):
 
     with col1:
         st.plotly_chart(Projects_Assignees_Sprints, use_container_width=True)
-        st.plotly_chart(Spent_days_Delivered_SPs, use_container_width=True)
-
-
+    st.plotly_chart(Spent_days_Delivered_SPs, use_container_width=True)
 
     with col2:
-        
         st.table(top_assignees_table)
         st.table(top_clients_table)
 
