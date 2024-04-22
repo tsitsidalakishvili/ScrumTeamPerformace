@@ -622,7 +622,7 @@ def display_tab2(df, assignee_rates):
     
     # Update layout for the line chart
     fig2.update_layout(
-        title='Team Daily Story Points delivered by Sprint',
+        title='Daily Story Points delivered by Team in Sprints',
         xaxis=dict(title='Sprint'),
         yaxis=dict(title='Average Ratio'),
         height=500,
@@ -726,7 +726,7 @@ def display_tab2(df, assignee_rates):
 
 
     # Create a box plot to visualize the distribution of story points by assignee
-    box_plot = px.box(df, x='Assignee', y='Story Points', title='Story Points Distribution by Assignee')
+    box_plot = px.box(df, x='Assignee', y='Story Points', title='The most frequent size of issues by Assignee')
 
     # Customize the box plot appearance
     box_plot.update_traces(marker=dict(size=5))
