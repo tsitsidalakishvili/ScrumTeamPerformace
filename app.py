@@ -537,7 +537,7 @@ def create_cfd_chart(avg_ratio_by_project):
 
     # Update the chart layout and styling
     cfd_chart.update_layout(
-        title='Daily Delivered Story Points by CoreTime Project',
+        title='Daily Story Points Delivered by CoreTime Project',
         xaxis=dict(title='CoreTimeProject'),
         yaxis=dict(title='Average Ratio'),
         font=dict(color='black')
