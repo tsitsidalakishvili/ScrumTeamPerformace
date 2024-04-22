@@ -351,7 +351,7 @@ def create_combined_chart(df, sprint_summary, sprint_avg_ratio):
     # Update the chart layout and styling
     combined_chart.update_layout(
         barmode='group',
-        title='Delivered Story Points vs. Worked days by Sprint',
+        title='Delivered Story Points vs. Worked Man-Days by Sprint',
         xaxis=dict(title='Sprint'),
         yaxis=dict(title='Value'),  # Changed the y-axis title since it's no longer normalized
         legend=dict(title='Metrics'),
@@ -537,7 +537,7 @@ def create_cfd_chart(avg_ratio_by_project):
 
     # Update the chart layout and styling
     cfd_chart.update_layout(
-        title='Team Average Ratio by CoreTimeProject',
+        title='Team Average Daily Delivered Story Points by CoreTimeProject',
         xaxis=dict(title='CoreTimeProject'),
         yaxis=dict(title='Average Ratio'),
         font=dict(color='black')
