@@ -828,11 +828,11 @@ def display_tab3(df, assignee_rates):
 
     with col1:
         st.table(top_assignees_table)
-        st.plotly_chart(Projects_Assignees_Sprints, use_container_width=True)
+        st.table(top_clients_table)
 
 
     with col2:
-        st.table(top_clients_table)
+        st.plotly_chart(Projects_Assignees_Sprints, use_container_width=True)
         st.plotly_chart(Spent_days_Delivered_SPs, use_container_width=True)
 
     # Add a search input for the table
