@@ -827,13 +827,15 @@ def display_tab3(df, assignee_rates):
     col1, col2 = st.columns(2)
 
     with col1:
-        st.table(top_assignees_table)
-        st.table(top_clients_table)
+        st.plotly_chart(Projects_Assignees_Sprints, use_container_width=True)
+        st.plotly_chart(Spent_days_Delivered_SPs, use_container_width=True)
+
 
 
     with col2:
-        st.plotly_chart(Projects_Assignees_Sprints, use_container_width=True)
-        st.plotly_chart(Spent_days_Delivered_SPs, use_container_width=True)
+        
+        st.table(top_assignees_table)
+        st.table(top_clients_table)
 
     # Add a search input for the table
     search_value = st.text_input("Search for value in table rows:", "", key="search_input_tab2")
