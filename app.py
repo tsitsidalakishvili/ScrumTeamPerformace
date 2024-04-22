@@ -811,13 +811,14 @@ def display_tab3(df, assignee_rates):
     )
 
     # Create a scatter plot: Story Points by Project, Assignee, and Sprint
+    # Create a scatter plot: Story Points by Project, Assignee, and Sprint
     df_grouped = df.groupby(['Project name', 'Assignee', 'Sprint'])['Story Points'].sum().reset_index()
     Projects_Assignees_Sprints = px.scatter(
         df_grouped,
         x='Project name',
-        y='Assignee',
+        y='Sprint',
         size='Story Points',
-        color='Sprint',
+        color='Assignee',
         labels={'Project name': 'Project Name', 'Assignee': 'Assignee', 'Sprint': 'Sprint', 'Story Points': 'Story Points'},
         size_max=60,
         title='Story Points by Project, Assignee, and Sprint'
