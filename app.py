@@ -1537,6 +1537,50 @@ def display_tab6():
         if not user_query:
             st.warning("Ask a question to get started.")
 
+#---------------------------------------------------------------------------------------------------#
+
+
+def display_predictions():
+    st.title('Task Time Prediction Results')
+
+    # Check if predictions are available in the session state
+    if 'predictions' in st.session_state:
+        predictions = st.session_state.predictions
+        true_values = st.session_state.true_values  # Assuming true values are also stored in session state for comparison
+
+        # Display predictions alongside true values
+        results_df = pd.DataFrame({
+            "Actual Duration": true_values,
+            "Predicted Duration": predictions.flatten()  # Adjusting shape if necessary
+        })
+
+        # Display the DataFrame in Streamlit
+        st.dataframe(results_df)
+
+        # Plotting actual vs predicted values using Plotly
+        fig = go.Figure()
+        fig.add_trace(go.Scatter(x=results_df.index, y=results_df['Actual Duration'], mode='lines+markers', name='Actual'))
+        fig.add_trace(go.Scatter(x=results_df.index, y=results_df['Predicted Duration'], mode='lines+markers', name='Predicted'))
+        fig.update_layout(title='Actual vs. Predicted Task Durations', xaxis_title='Task', yaxis_title='Duration (hours)', legend_title="Legend")
+        st.plotly_chart(fig)
+
+        # Optionally, provide download links for the results
+        csv = results_df.to_csv(index=False).encode('utf-8')
+        st.download_button(label="Download results as CSV", data=csv, file_name='task_time_predictions.csv', mime='text/csv')
+
+        # Display any additional metrics or charts as needed
+        # For example, showing a histogram of residuals (errors)
+        residuals = results_df['Actual Duration'] - results_df['Predicted Duration']
+        fig_residuals = px.histogram(residuals, nbins=50, title="Histogram of Prediction Errors")
+        fig_residuals.update_layout(xaxis_title="Error", yaxis_title="Count")
+        st.plotly_chart(fig_residuals)
+
+    else:
+        st.warning('No predictions to display. Please run the model to generate predictions.')
+
+
+
+
             
 #---------------------------------------------------------------------------------------------------#
 DEFAULT_RATES = {
@@ -1561,7 +1605,7 @@ def run_app():
         "Productivity & Workload": display_tab3,
         "LLM": display_LLM,  
         "Similarity": Similarity_Analysis,
-        "Prediction": Predictions,
+        "Prediction": display_predictions,
     }
 
     # Get user selection
