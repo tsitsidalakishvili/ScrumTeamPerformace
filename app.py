@@ -584,23 +584,19 @@ def generate_word_cloud_from_file(file_path):
 def display_tab2(df, assignee_rates):
     # Assume 'sprint_bins' is accessible here, mapping sprints to their numeric order
     sprint_order = {f"Sprint {80 + i}": i for i, _ in enumerate(sprint_bins)}
-    
+
     # Apply the sprint order to the DataFrame
     df['Sprint_Order'] = df['Sprint'].map(sprint_order)
-    
+
+    # Convert 'Sprint 81', 'Sprint 82', etc. to '81', '82', etc.
+    df['Sprint_Number'] = df['Sprint'].str.replace('Sprint ', '')
+
     # Sort DataFrame by this new order for plotting
     df = df.sort_values(by='Sprint_Order')
-    
-    # Filter the DataFrame to only include rows where 'Status' is 'Done'
+
+    # Filter and aggregate the DataFrame as before
     done_df = df[df['Status'] == 'Done']
-    
-    # Group by 'Sprint' and aggregate based on the 'Story Points' and 'days' columns
-    sprint_summary = done_df.groupby('Sprint').agg({'Story Points': 'sum', 'days': 'sum'}).reset_index()
-
-    # Calculate the total story points and total days for each sprint
-    sprint_totals = df.groupby('Sprint').agg({'Story Points': 'sum', 'days': 'sum'}).reset_index()
-
-    # Calculate the average ratio as story points divided by days for each sprint
+    sprint_totals = done_df.groupby('Sprint_Number').agg({'Story Points': 'sum', 'days': 'sum'}).reset_index()
     sprint_totals['Avg_Ratio'] = sprint_totals['Story Points'] / sprint_totals['days']
 
     # Remove whitespace from column names (if any)
@@ -618,21 +614,23 @@ def display_tab2(df, assignee_rates):
     # Using the sorted 'sprint_totals' DataFrame for plotting the Team Average Ratio by Sprint
     fig2 = go.Figure()
     fig2.add_trace(go.Scatter(
-        x=sprint_totals['Sprint'],
+        x=sprint_totals['Sprint_Number'],  # Use the numeric part only
         y=sprint_totals['Avg_Ratio'],
         mode='lines+markers',
         marker=dict(size=8),
         line=dict(width=2),
     ))
-    
+
     # Update layout for the line chart
     fig2.update_layout(
         title='Daily Story Points delivered by Sprints',
-        xaxis=dict(title='Sprint'),
+        xaxis=dict(title='Sprint Number'),
         yaxis=dict(title='Average Ratio'),
         height=500,
         margin=dict(l=100, r=100, t=100, b=100),
     )
+
+    return fig2
 
 
 
