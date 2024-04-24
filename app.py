@@ -1561,6 +1561,7 @@ def run_app():
         "Productivity & Workload": display_tab3,
         "LLM": display_LLM,  
         "Similarity": Similarity_Analysis,
+        "Prediction": Predictions,
     }
 
     # Get user selection
