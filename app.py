@@ -1623,7 +1623,7 @@ def run_app():
     Click the button below to go to the fileshare page to download the required CSV files:
     """)
     fileshare_url = "https://eigenlimited777.sharepoint.com/sites/FileshareCommercial2/Shared%20Documents/Forms/AllItems.aspx?id=%2Fsites%2FFileshareCommercial2%2FShared%20Documents%2FScrum%20Team%20Performance%20Report%20Data&p=true&ga=1"
-    st.markdown(f"[Download Files](%s)" % fileshare_url, unsafe_allow_html=True)
+    st.markdown(f'<a href="{fileshare_url}" target="_blank">Download Files</a>', unsafe_allow_html=True)
 
     # Define tabs dictionary
     tabs = {
@@ -1635,7 +1635,6 @@ def run_app():
         "Similarity": Similarity_Analysis,
         "Prediction": display_predictions,
     }
-
     # Get user selection
     selected_tab = st.sidebar.radio("Select a Tab", list(tabs.keys()))
     if 'selected_tab' not in st.session_state or st.session_state.selected_tab != selected_tab:
