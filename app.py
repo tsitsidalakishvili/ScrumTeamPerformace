@@ -1610,6 +1610,21 @@ def run_app():
     st.set_page_config(layout='wide')
     df = None  # Initialize df within run_app function for proper scope
 
+    # Add instructions for users on how to use the application
+    st.title("Welcome to the Performance Analysis Application")
+    st.markdown("""
+    This application helps you analyze team and individual performance, costs, productivity, and workload.
+    To get started, please follow these steps:
+    
+    1. **Download Files**: Click the button below to download the necessary files.
+    2. **Upload Files**: Use the sidebar to upload the downloaded CSV files.
+    3. **Navigate**: Select the desired tab from the sidebar to view specific analysis.
+
+    Click the button below to go to the fileshare page to download the required CSV files:
+    """)
+    fileshare_url = "https://your-fileshare-link.com"
+    st.markdown(f"[Download Files](%s)" % fileshare_url, unsafe_allow_html=True)
+
     # Define tabs dictionary
     tabs = {
         "Team Performance": display_tab2,
