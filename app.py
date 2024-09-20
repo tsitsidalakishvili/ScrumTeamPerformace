@@ -95,7 +95,11 @@ sprint_bins = [
     ('25 Apr 2024', '15 May 2024'),
     ('16 May 2024', '05 June 2024'),
     ('06 June 2024', '26 June 2024'),
-    ('27 June 2024', '18 July 2024'),
+    ('27 June 2024', '17 July 2024'),
+    ('18 July 2024', '07 August 2024'),
+    ('08 August 2024', '28 August 2024'),
+    ('29 August 2024', '18 September 2024')
+
 
 
 
