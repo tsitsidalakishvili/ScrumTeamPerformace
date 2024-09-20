@@ -88,10 +88,10 @@ sprint_bins = [
     ('07 Dec 2023', '20 Dec 2023'),
     ('21 Dec 2023', '10 Jan 2024'),
     ('11 Jan 2024', '31 Jan 2024'),
-    ('1 Feb 2024', '21 Feb 2024'),
+    ('01 Feb 2024', '21 Feb 2024'),
     ('22 Feb 2024', '13 Mar 2024'),
-    ('14 Mar 2024', '3 Apr 2024'),
-    ('4 Apr 2024', '24 Apr 2024'),
+    ('14 Mar 2024', '03 Apr 2024'),
+    ('04 Apr 2024', '24 Apr 2024'),
     ('25 Apr 2024', '15 May 2024'),
     ('16 May 2024', '05 June 2024'),
     ('06 June 2024', '26 June 2024'),
@@ -99,16 +99,8 @@ sprint_bins = [
     ('18 July 2024', '07 August 2024'),
     ('08 August 2024', '28 August 2024'),
     ('29 August 2024', '18 September 2024'),
-    ('19 September 2024', '09 October 2024')
-
-    
-
-
-
-
-    
-
-    
+    ('19 September 2024', '09 October 2024'),
+    ('10 October 2024', '30 October 2024')  # Added the missing sprint
 ]
 
 
